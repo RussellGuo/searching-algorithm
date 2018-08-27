@@ -61,11 +61,13 @@ if __name__ == "__main__":
 
     for i in range(7):
         step = fractions.Fraction(i)
-        horn_line = Line(zero, one, step, ["h%d" % i])
-        vert_line = Line(one, zero, step, ["v%d" % i])
+        horn_line = Line(zero, one, step, "H%d" % i)
+        vert_line = Line(one, zero, step, "V%d" % i)
         init_figure = Figure(init_figure, horn_line, my_new_point_checker)
         init_figure = Figure(init_figure, vert_line, my_new_point_checker)
     init_figure.parent = None
+    for p in init_figure.points:
+        p.obj_list = "P%d%d" % (p.y, p.x)
     print(init_figure)
     lines = (init_figure.get_new_potential_lines())
     ff = set()

@@ -11,6 +11,8 @@ class Point:
         self.obj_list = obj_list
 
     def __repr__(self):
+        if isinstance(self.obj_list, str):
+            return self.obj_list
         return '<%s, %s>' % (self.x, self.y)
 
     def __hash__(self):
@@ -33,6 +35,20 @@ class Point:
 
     def __ge__(self, other):
         return (self.y, self.x) >= (other.y, other.x)
+
+    def details(self):
+        if self.obj_list is None:
+            return str(self)
+        if isinstance(self.obj_list, str):
+            return self.obj_list
+        else:
+            return "%s(%s,%s)" % (self.obj_list[0], self.obj_list[1].details(), self.obj_list[2].details())
+
+    def middle(self, other):
+        return Point((self.x + other.x) / 2, (self.y + other.y) / 2, ["-", self, other])
+
+    def l2(self, other):
+        return (self.x - other.x) ** 2 + (self.y - other.y) ** 2
 
 
 class Line:
@@ -108,6 +124,8 @@ class Line:
         return line
 
     def __repr__(self):
+        if isinstance(self.obj_list, str):
+            return self.obj_list
         return '<%s * x + %s * y = %s>' % (self.__shadow_a, self.__shadow_b, self.__shadow_c)
 
     def __hash__(self):
@@ -116,31 +134,36 @@ class Line:
     def __eq__(self, other: Line):
         return self.__shadow_a == other.__shadow_a and self.__shadow_b == other.__shadow_b and self.__shadow_c == other.__shadow_c
 
+    def details(self):
+        if self.obj_list is None:
+            return str(self)
+        if isinstance(self.obj_list, str):
+            return self.obj_list
+        else:
+            return "%s(%s,%s)" % (self.obj_list[0], self.obj_list[1].details(), self.obj_list[2].details())
+
 
 if __name__ == "__main__":
-    half = fractions.Fraction(0.5)
-
-    a = half + half * 3 + half * 3
-    x1 = a / 3
-
-    b = half + half + half * 3
-    x2 = b / 3
-
-    x3 = x4 = x2 + 4
-    print((x1 + x2 + x3 + x4) / 4)
-    test_p1 = Point(0, 0)
-    test_p2 = Point(2, 2)
-    test_p3 = Point(1, 1.5)
-    test_p4 = Point(1.5, 0.5)
-    test_l1 = Line.get_line_contains_points(test_p1, test_p2)
-    test_l2 = Line.get_line_contains_points(test_p3, test_p4)
-    test_l3 = Line.get_line_contains_points(test_p1, test_p2)
-    print({test_l3, test_l1})
-    p = test_l1.get_cross_point(test_l2)
-    print(p)
-    print(test_l1.get_cross_point(test_l1))
-
-    perpendicular_line = Line.get_line_perpendicular_to(test_l2, test_p2)
-    parallel_line = Line.get_line_parallel_to(test_l2, test_p2)
+    pb = Point( fractions.Fraction(2), fractions.Fraction(5), "B")
+    pc = Point( fractions.Fraction(5), fractions.Fraction(4), "C")
+    la = Line.get_line_contains_points(pb, pc)
+    p1 = Point( fractions.Fraction(1), fractions.Fraction(3), "p1")
+    p2 = Point( fractions.Fraction(1), fractions.Fraction(2), "p2")
+    lc = Line.get_line_contains_points(pb, p1)
+    lb = Line.get_line_contains_points(pc, p2)
+    pa = Line.get_cross_point(lb, lc)
+    px = Point(pa.x + 1, pa.y + 1, "px")
+    lt = Line.get_line_contains_points(pa, px)
+    pm = la.get_cross_point(lt)
+    Lc = Line.get_line_parallel_to(lc, pm)
+    Lb = Line.get_line_parallel_to(lb, pm)
+    PC = Line.get_cross_point(Lc, lb)
+    PB = Line.get_cross_point(Lb, lc)
+    L = Line.get_line_contains_points(PB, PC)
+    print(L)
+    print ( (pa.l2(PB), pa.l2(PC)))
+    print ( (pm.l2(PB), pm.l2(PC)))
+    print ( lb.contain_point(PC))
+    print ( lc.contain_point(PB))
+    print ( la.contain_point(pm))
     pass
-
