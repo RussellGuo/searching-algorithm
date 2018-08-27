@@ -56,7 +56,7 @@ class Line:
         if self.__shadow_a < 0 or self.__shadow_a == 0 and self.__shadow_b < 0:
             self.__shadow_a *= -1
             self.__shadow_b *= -1
-            self.__shadow_a *= -1
+            self.__shadow_c *= -1
 
     def contain_point(self, p: Point) -> bool:
         l = self.__shadow_a * p.x + self.__shadow_b * p.y - self.__shadow_c
@@ -75,7 +75,7 @@ class Line:
         x, y = fractions.Fraction(dx, _d), fractions.Fraction(dy, _d)
         if new_point_checker and not new_point_checker(x, y):
             return None
-        return Point(x, y, [self, other])
+        return Point(x, y, ["X", self, other])
 
     @staticmethod
     def get_line_contains_points(p1: Point, p2: Point) -> Line:
@@ -84,7 +84,27 @@ class Line:
         a = p1.y - p2.y
         b = p2.x - p1.x
         c = p2.x * p1.y - p1.x * p2.y
-        line = Line(a, b, c, [p1, p2])
+        line = Line(a, b, c, ["<>", p1, p2])
+        return line
+
+    @staticmethod
+    def get_line_parallel_to(other: Line, p: Point) -> Line:
+        if other is None or p is None:
+            return None
+        a = other.__shadow_a
+        b = other.__shadow_b
+        c = a * p.x + b * p.y
+        line = Line(a, b, c, ["//", other, p])
+        return line
+
+    @staticmethod
+    def get_line_perpendicular_to(other: Line, p: Point) -> Line:
+        if other is None or p is None:
+            return None
+        a = other.__shadow_b
+        b = -other.__shadow_a
+        c = a * p.x + b * p.y
+        line = Line(a, b, c, ["-|", other, p])
         return line
 
     def __repr__(self):
@@ -119,3 +139,8 @@ if __name__ == "__main__":
     p = test_l1.get_cross_point(test_l2)
     print(p)
     print(test_l1.get_cross_point(test_l1))
+
+    perpendicular_line = Line.get_line_perpendicular_to(test_l2, test_p2)
+    parallel_line = Line.get_line_parallel_to(test_l2, test_p2)
+    pass
+
