@@ -5,9 +5,10 @@ class Line: pass
 
 
 class Point:
-    def __init__(self, x: fractions.Fraction, y: fractions.Fraction):
+    def __init__(self, x: fractions.Fraction, y: fractions.Fraction, obj_list=None):
         self.x = x
         self.y = y
+        self.obj_list = obj_list
 
     def __repr__(self):
         return '<%s, %s>' % (self.x, self.y)
@@ -35,10 +36,11 @@ class Point:
 
 
 class Line:
-    def __init__(self, _a: fractions.Fraction, _b: fractions.Fraction, _c: fractions.Fraction):
+    def __init__(self, _a: fractions.Fraction, _b: fractions.Fraction, _c: fractions.Fraction, obj_list=None):
         self.a = fractions.Fraction(_a)
         self.b = fractions.Fraction(_b)
         self.c = fractions.Fraction(_c)
+        self.obj_list = obj_list
 
         # try to normalize it
         denominator = self.a.denominator * self.b.denominator * self.c.denominator
@@ -73,7 +75,7 @@ class Line:
         x, y = fractions.Fraction(dx, _d), fractions.Fraction(dy, _d)
         if new_point_checker and not new_point_checker(x, y):
             return None
-        return Point(x, y)
+        return Point(x, y, [self, other])
 
     @staticmethod
     def get_line_contains_points(p1: Point, p2: Point) -> Line:
@@ -82,7 +84,7 @@ class Line:
         a = p1.y - p2.y
         b = p2.x - p1.x
         c = p2.x * p1.y - p1.x * p2.y
-        line = Line(a, b, c)
+        line = Line(a, b, c, [p1, p2])
         return line
 
     def __repr__(self):

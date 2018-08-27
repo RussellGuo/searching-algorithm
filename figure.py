@@ -25,7 +25,7 @@ class Figure:
         lines = []
         for i in range(len(points)):
             p1 = points[i]
-            for j in range(i +1, len(points)):
+            for j in range(i + 1, len(points)):
                 p2 = points[j]
                 l = Line.get_line_contains_points(p1, p2)
                 if l and l not in self.lines and l not in lines:
@@ -61,8 +61,8 @@ if __name__ == "__main__":
 
     for i in range(7):
         step = fractions.Fraction(i)
-        horn_line = Line(zero, one, step)
-        vert_line = Line(one, zero, step)
+        horn_line = Line(zero, one, step, ["h%d" % i])
+        vert_line = Line(one, zero, step, ["v%d" % i])
         init_figure = Figure(init_figure, horn_line, my_new_point_checker)
         init_figure = Figure(init_figure, vert_line, my_new_point_checker)
     init_figure.parent = None
