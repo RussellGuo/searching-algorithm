@@ -1,4 +1,5 @@
-import fractions, math
+import fractions
+import math
 
 
 class Line: pass
@@ -144,11 +145,11 @@ class Line:
 
 
 if __name__ == "__main__":
-    pb = Point( fractions.Fraction(2), fractions.Fraction(5), "B")
-    pc = Point( fractions.Fraction(5), fractions.Fraction(4), "C")
+    pb = Point(fractions.Fraction(2), fractions.Fraction(5), "B")
+    pc = Point(fractions.Fraction(5), fractions.Fraction(4), "C")
     la = Line.get_line_contains_points(pb, pc)
-    p1 = Point( fractions.Fraction(1), fractions.Fraction(3), "p1")
-    p2 = Point( fractions.Fraction(1), fractions.Fraction(2), "p2")
+    p1 = Point(fractions.Fraction(1), fractions.Fraction(3), "p1")
+    p2 = Point(fractions.Fraction(1), fractions.Fraction(2), "p2")
     lc = Line.get_line_contains_points(pb, p1)
     lb = Line.get_line_contains_points(pc, p2)
     pa = Line.get_cross_point(lb, lc)
@@ -161,9 +162,9 @@ if __name__ == "__main__":
     PB = Line.get_cross_point(Lb, lc)
     L = Line.get_line_contains_points(PB, PC)
     print(L)
-    print ( (pa.l2(PB), pa.l2(PC)))
-    print ( (pm.l2(PB), pm.l2(PC)))
-    print ( lb.contain_point(PC))
-    print ( lc.contain_point(PB))
-    print ( la.contain_point(pm))
+    print((pa.l2(PB), pa.l2(PC)))
+    print((pm.l2(PB), pm.l2(PC)))
+    print(lb.contain_point(PC))
+    print(lc.contain_point(PB))
+    print(la.contain_point(pm))
     pass
