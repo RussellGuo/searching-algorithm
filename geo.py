@@ -167,4 +167,6 @@ if __name__ == "__main__":
     print(lb.contain_point(PC))
     print(lc.contain_point(PB))
     print(la.contain_point(pm))
+
+    print(pa.middle(pm))
     pass
