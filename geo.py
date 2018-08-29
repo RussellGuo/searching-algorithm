@@ -2,14 +2,12 @@ import fractions
 import math
 
 
-class Line: pass
-
-
 class Point:
     def __init__(self, x: fractions.Fraction, y: fractions.Fraction, obj_list=None):
         self.x = x
         self.y = y
         self.obj_list = obj_list
+        self.hash = hash((self.x, self.y))
 
     def __repr__(self):
         if isinstance(self.obj_list, str):
@@ -17,7 +15,7 @@ class Point:
         return '<%s, %s>' % (self.x, self.y)
 
     def __hash__(self):
-        return hash((self.x, self.y))
+        return self.hash
 
     def __eq__(self, other):
         return (self.y, self.x) == (other.y, other.x)
@@ -54,48 +52,47 @@ class Point:
 
 class Line:
     def __init__(self, _a: fractions.Fraction, _b: fractions.Fraction, _c: fractions.Fraction, obj_list=None):
-        self.a = fractions.Fraction(_a)
-        self.b = fractions.Fraction(_b)
-        self.c = fractions.Fraction(_c)
         self.obj_list = obj_list
 
         # try to normalize it
-        denominator = self.a.denominator * self.b.denominator * self.c.denominator
+        denominator = _a.denominator * _b.denominator * _c.denominator
 
-        a = (self.a * denominator).numerator
-        b = (self.b * denominator).numerator
-        c = (self.c * denominator).numerator
+        a = (_a * denominator).numerator
+        b = (_b * denominator).numerator
+        c = (_c * denominator).numerator
         g = math.gcd(a, b)
         g: int = math.gcd(g, c)
-        self.__shadow_a = a // g
-        self.__shadow_b = b // g
-        self.__shadow_c = c // g
-        if self.__shadow_a < 0 or self.__shadow_a == 0 and self.__shadow_b < 0:
-            self.__shadow_a *= -1
-            self.__shadow_b *= -1
-            self.__shadow_c *= -1
+        self.a = a // g
+        self.b = b // g
+        self.c = c // g
+        if self.a < 0 or self.a == 0 and self.b < 0:
+            self.a *= -1
+            self.b *= -1
+            self.c *= -1
+
+        self.hash = hash((self.a, self.b, self.c))
 
     def contain_point(self, p: Point) -> bool:
-        l = self.__shadow_a * p.x + self.__shadow_b * p.y - self.__shadow_c
+        l = self.a * p.x + self.b * p.y - self.c
         return l == 0
 
-    def get_cross_point(self, other: Line, new_point_checker=None) -> Point:
+    def get_cross_point(self, other, new_point_checker=None) -> Point:
         def det2(_a, _b, _c, _d):
             return _a * _d - _b * _c
 
-        _d = det2(self.__shadow_a, self.__shadow_b, other.__shadow_a, other.__shadow_b)
+        _d = det2(self.a, self.b, other.a, other.b)
         if _d == 0:
             return None
 
-        dx = det2(self.__shadow_c, self.__shadow_b, other.__shadow_c, other.__shadow_b)
-        dy = det2(self.__shadow_a, self.__shadow_c, other.__shadow_a, other.__shadow_c)
+        dx = det2(self.c, self.b, other.c, other.b)
+        dy = det2(self.a, self.c, other.a, other.c)
         x, y = fractions.Fraction(dx, _d), fractions.Fraction(dy, _d)
         if new_point_checker and not new_point_checker(x, y):
             return None
         return Point(x, y, ["X", self, other])
 
     @staticmethod
-    def get_line_contains_points(p1: Point, p2: Point) -> Line:
+    def get_line_contains_points(p1: Point, p2: Point):
         if p1 == p2:
             return None
         a = p1.y - p2.y
@@ -105,21 +102,21 @@ class Line:
         return line
 
     @staticmethod
-    def get_line_parallel_to(other: Line, p: Point) -> Line:
+    def get_line_parallel_to(other, p: Point):
         if other is None or p is None:
             return None
-        a = other.__shadow_a
-        b = other.__shadow_b
+        a = other.a
+        b = other.b
         c = a * p.x + b * p.y
         line = Line(a, b, c, ["//", other, p])
         return line
 
     @staticmethod
-    def get_line_perpendicular_to(other: Line, p: Point) -> Line:
+    def get_line_perpendicular_to(other, p: Point):
         if other is None or p is None:
             return None
-        a = other.__shadow_b
-        b = -other.__shadow_a
+        a = other.b
+        b = -other.a
         c = a * p.x + b * p.y
         line = Line(a, b, c, ["-|", other, p])
         return line
@@ -127,13 +124,28 @@ class Line:
     def __repr__(self):
         if isinstance(self.obj_list, str):
             return self.obj_list
-        return '<%s * x + %s * y = %s>' % (self.__shadow_a, self.__shadow_b, self.__shadow_c)
+        return '<%s * x + %s * y = %s>' % (self.a, self.b, self.c)
 
     def __hash__(self):
-        return hash((self.__shadow_a, self.__shadow_b, self.__shadow_c))
+        return self.hash
 
-    def __eq__(self, other: Line):
-        return self.__shadow_a == other.__shadow_a and self.__shadow_b == other.__shadow_b and self.__shadow_c == other.__shadow_c
+    def __eq__(self, other):
+        return (self.a, self.b, self.c) == (other.a, other.b, other.c)
+
+    def __ge__(self, other):
+        return (self.a, self.b, self.c) >= (other.a, other.b, other.c)
+
+    def __gt__(self, other):
+        return (self.a, self.b, self.c) > (other.a, other.b, other.c)
+
+    def __lt__(self, other):
+        return (self.a, self.b, self.c) < (other.a, other.b, other.c)
+
+    def __le__(self, other):
+        return (self.a, self.b, self.c) <= (other.a, other.b, other.c)
+
+    def __ne__(self, other):
+        return (self.a, self.b, self.c) != (other.a, other.b, other.c)
 
     def details(self):
         if self.obj_list is None:

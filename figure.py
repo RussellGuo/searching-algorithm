@@ -3,44 +3,43 @@ import fractions
 from geo import Point, Line
 
 
-class Figure: pass
-
-
 class Figure:
-    def __init__(self, parent: Figure, line: Line, new_point_checker=None):
-        self.parent = parent
+    def __init__(self, parent, line, new_point_checker=None):
+
         self.new_point_checker = new_point_checker or parent.new_point_checker
-        parent_points, parent_lines = (parent.points, parent.lines) if parent else ((), ())
-        assert (line not in parent_lines)
-        self.lines = parent_lines + (line,)
-        new_points = []
+        base_lines = parent.lines if parent else frozenset()
+        self.lines = frozenset(base_lines | {line})
+        self.hash = hash(self.lines)
+
+        points = set(parent.points if parent else frozenset())
+        begin_points_count = len(points)
         for l in self.lines:
             p = line.get_cross_point(l, self.new_point_checker)
-            if p and p not in parent_points and p not in new_points:
-                new_points.append(p)
-        self.points = tuple(sorted(list(parent_points) + new_points))
-        self.new_point_count = len(new_points)
+            if p:
+                points.add(p)
+        self.points = frozenset(points)
+        self.new_point_count = len(self.points) - begin_points_count
 
     def get_new_potential_lines(self):
         points = tuple(sorted(self.points))
-        lines = []
+        lines = set()
         for i in range(len(points)):
             p1 = points[i]
             for j in range(i + 1, len(points)):
                 p2 = points[j]
                 l = Line.get_line_contains_points(p1, p2)
-                if l and l not in self.lines and l not in lines:
-                    lines.append(l)
+                if l and l not in self.lines:
+                    lines.add(l)
         return lines
 
     def is_different_from_parent(self):
         return self.new_point_count >= 1
 
-    def __eq__(self, other: Figure):
-        return self.points == other.points and self.lines == other.lines
+    def __eq__(self, other):
+        return self.lines == other.lines
 
     def __hash__(self):
-        return hash((self.points, self.lines))
+        return self.hash
 
     def __repr__(self):
         points = '\n'.join(str(i) for i in sorted(self.points))
@@ -97,10 +96,10 @@ def search(figure: Figure, point_target: Point):
         for l in o.lines:
             print(l.details())
             print(l)
-        i = o.points.index(point_target)
-        p = o.points[i]
-        print(p.details())
-        pass
+        for p in o.points:
+            if p == point_target:
+                print(p.details())
+                break
 
 
 def exam_22_17():
@@ -143,6 +142,7 @@ def exam_22_17():
     # <>(X(<>(P05,X(a,V4)),H2),P31) for <41/18, 95/36>
     # <>(P06,P53) for <13/4, 55/12>
     # <>(P02,X(<>(P36,X(lm,a)),H5)) for <41/18, 95/36>, too
+    # X( <> (X(b, V2), X(c, H4)), <> (P42, X(m, c))) for <43/24, 25/8>
 
 
 def exam_27_14():
