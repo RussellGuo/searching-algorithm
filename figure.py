@@ -97,6 +97,9 @@ def search(figure: Figure, point_target: Point):
         for l in o.lines:
             print(l.details())
             print(l)
+        i = o.points.index(point_target)
+        p = o.points[i]
+        print(p.details())
         pass
 
 
@@ -126,14 +129,14 @@ def exam_22_17():
     exam_figure = Figure(exam_figure, line_t1)
     exam_figure = Figure(exam_figure, line_t2)
     exam_figure = Figure(exam_figure, line_t3)
-    #exam_figure = Figure(exam_figure, line_t4)
+    # exam_figure = Figure(exam_figure, line_t4)
 
     # this is the root
     exam_figure.parent = None
 
     # try to find it
     point_target = Point(fractions.Fraction(47, 36), fractions.Fraction(65, 18), "Target")
-    point_target = Point(fractions.Fraction(43, 24), fractions.Fraction(25, 8), "Target")
+    # point_target = Point(fractions.Fraction(43, 24), fractions.Fraction(25, 8), "Target")
     search(exam_figure, point_target)
 
     # <>(P06,X(<>(P23,X(c,H4)),b)) for <47/36, 65/18>
@@ -142,5 +145,20 @@ def exam_22_17():
     # <>(P02,X(<>(P36,X(lm,a)),H5)) for <41/18, 95/36>, too
 
 
+def exam_27_14():
+    init_figure = get_init_figure()
+
+    # create the example figure
+    exam_figure = init_figure
+    line_1 = Line(fractions.Fraction(1), fractions.Fraction(1), fractions.Fraction(6), "line6")
+    exam_figure = Figure(exam_figure, line_1)
+    # this is the root
+    exam_figure.parent = None
+
+    # try to find it
+    point_target = Point(fractions.Fraction(35, 12), fractions.Fraction(37, 12), "Target")
+    search(exam_figure, point_target)
+
+
 if __name__ == "__main__":
-    exam_22_17()
+    exam_27_14()
