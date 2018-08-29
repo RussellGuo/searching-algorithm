@@ -11,29 +11,37 @@ class Figure:
         self.lines = frozenset(base_lines | {line})
         self.hash = hash(self.lines)
 
-        points = set(parent.points if parent else frozenset())
-        begin_points_count = len(points)
+        self.base_points = frozenset(parent.base_points | parent.new_points) if parent else frozenset()
+        new_points = set()
         for l in self.lines:
             p = line.get_cross_point(l, self.new_point_checker)
-            if p:
-                points.add(p)
-        self.points = frozenset(points)
-        self.new_point_count = len(self.points) - begin_points_count
+            if p and p not in self.base_points:
+                new_points.add(p)
+        self.new_points = frozenset(new_points)
 
-    def get_new_potential_lines(self):
-        points = tuple(sorted(self.points))
+    def get_new_potential_lines(self, for_new_point_only=False):
         lines = set()
-        for i in range(len(points)):
-            p1 = points[i]
-            for j in range(i + 1, len(points)):
-                p2 = points[j]
-                l = Line.get_line_contains_points(p1, p2)
-                if l and l not in self.lines:
-                    lines.add(l)
+
+        def append_line(p1, p2):
+            l = Line.get_line_contains_points(p1, p2)
+            if l and l not in self.lines:
+                lines.add(l)
+
+        if for_new_point_only:
+            for p_1 in self.new_points:
+                for p_2 in self.base_points:
+                    append_line(p_1, p_2)
+        else:
+            points = tuple(sorted(self.new_points | self.base_points))
+            for i in range(len(points)):
+                p_1 = points[i]
+                for j in range(i + 1, len(points)):
+                    p_2 = points[j]
+                    append_line(p_1, p_2)
         return lines
 
     def is_different_from_parent(self):
-        return self.new_point_count >= 1
+        return len(self.new_points) > 0
 
     def __eq__(self, other):
         return self.lines == other.lines
@@ -64,7 +72,7 @@ def get_init_figure():
         init_figure = Figure(init_figure, horn_line, my_new_point_checker)
         init_figure = Figure(init_figure, vert_line, my_new_point_checker)
     init_figure.parent = None
-    for p in init_figure.points:
+    for p in init_figure.new_points | init_figure.base_points:
         p.obj_list = "P%d%d" % (p.y, p.x)
 
     return init_figure
@@ -77,12 +85,13 @@ def search(figure: Figure, point_target: Point):
         for i in range(10):
             print(i, len(current_figure_set))
             next_figure_set = set()
-            for fig in current_figure_set:
-                lines = (fig.get_new_potential_lines())
+            while len(current_figure_set) > 0:
+                fig = current_figure_set.pop()
+                lines = (fig.get_new_potential_lines(i > 0))
                 for l in lines:
                     f = Figure(fig, l)
-                    if f.new_point_count > 0 and f not in next_figure_set:
-                        if point_target in f.points:
+                    if f.is_different_from_parent and f not in next_figure_set:
+                        if point_target in f.new_points:
                             raise StopIteration(f)
                         next_figure_set.add(f)
                         ll = len(next_figure_set)
@@ -96,7 +105,7 @@ def search(figure: Figure, point_target: Point):
         for l in o.lines:
             print(l.details())
             print(l)
-        for p in o.points:
+        for p in o.new_points:
             if p == point_target:
                 print(p.details())
                 break
