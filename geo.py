@@ -156,7 +156,7 @@ class Line:
             return "%s(%s,%s)" % (self.obj_list[0], self.obj_list[1].details(), self.obj_list[2].details())
 
 
-if __name__ == "__main__":
+def test_main():
     pb = Point(fractions.Fraction(2), fractions.Fraction(5), "B")
     pc = Point(fractions.Fraction(5), fractions.Fraction(4), "C")
     la = Line.get_line_contains_points(pb, pc)
@@ -181,4 +181,7 @@ if __name__ == "__main__":
     print(la.contain_point(pm))
 
     print(pa.middle(pm))
-    pass
+
+
+if __name__ == "__main__":
+    test_main()

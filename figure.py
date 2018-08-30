@@ -49,12 +49,6 @@ class Figure:
     def __hash__(self):
         return self.hash
 
-    def __repr__(self):
-        points = '\n'.join(str(i) for i in sorted(self.points))
-        lines = '\n'.join(str(i) for i in self.lines)
-
-        return '@\n' + points + '@\n#\n' + lines + '\n#'
-
 
 def get_init_figure():
     zero = fractions.Fraction(0)
@@ -109,6 +103,8 @@ def search(figure: Figure, point_target: Point):
             if p == point_target:
                 print(p.details())
                 break
+        return o
+    return None
 
 
 def exam_22_17():
@@ -133,19 +129,22 @@ def exam_22_17():
     exam_figure = Figure(exam_figure, line_b)
     exam_figure = Figure(exam_figure, line_c)
 
-    exam_figure = Figure(exam_figure, line_m)
-    exam_figure = Figure(exam_figure, line_t1)
-    exam_figure = Figure(exam_figure, line_t2)
-    exam_figure = Figure(exam_figure, line_t3)
+    # exam_figure = Figure(exam_figure, line_m)
+    # exam_figure = Figure(exam_figure, line_t1)
+    # exam_figure = Figure(exam_figure, line_t2)
+    # exam_figure = Figure(exam_figure, line_t3)
     # exam_figure = Figure(exam_figure, line_t4)
 
     # this is the root
     exam_figure.parent = None
 
     # try to find it
-    point_target = Point(fractions.Fraction(47, 36), fractions.Fraction(65, 18), "Target")
+    point_target = Point(fractions.Fraction(13, 4), fractions.Fraction(55, 12), "Target")
+    # point_target = Point(fractions.Fraction(47, 36), fractions.Fraction(65, 18), "Target")
+    # point_target = Point(fractions.Fraction(41, 18), fractions.Fraction(95, 36), "Target")
     # point_target = Point(fractions.Fraction(43, 24), fractions.Fraction(25, 8), "Target")
-    search(exam_figure, point_target)
+    result = search(exam_figure, point_target)
+    return result
 
     # <>(P06,X(<>(P23,X(c,H4)),b)) for <47/36, 65/18>
     # <>(X(<>(P05,X(a,V4)),H2),P31) for <41/18, 95/36>
@@ -166,8 +165,13 @@ def exam_27_14():
 
     # try to find it
     point_target = Point(fractions.Fraction(35, 12), fractions.Fraction(37, 12), "Target")
-    search(exam_figure, point_target)
+    result = search(exam_figure, point_target)
+    return result
 
 
 if __name__ == "__main__":
-    exam_27_14()
+    result = exam_27_14()
+    if result:
+        import draw_result
+        draw_result.draw_result(result)
+
