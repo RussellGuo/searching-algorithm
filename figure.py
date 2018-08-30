@@ -168,8 +168,22 @@ def exam_27_14():
     return result
 
 
+def exam_27_15():
+    init_figure = get_init_figure()
+
+    # create the example figure
+    exam_figure = init_figure
+    # this is the root
+    exam_figure.parent = None
+
+    # try to find it
+    point_target = Point(fractions.Fraction(52, 16), fractions.Fraction(43, 16), "Target")
+    result = search(exam_figure, point_target)
+    return result
+
+
 if __name__ == "__main__":
-    fig, point = exam_27_14()
+    fig, point = exam_27_15()
     if fig:
         import draw_searching_graph
         draw_searching_graph.draw_result(fig, point)
