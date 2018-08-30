@@ -90,7 +90,7 @@ def search(figure: Figure, point_target: Point):
                 lines = (fig.get_new_potential_lines(i > 0))
                 for l in lines:
                     f = Figure(fig, l)
-                    if f.is_different_from_parent and f not in next_figure_set:
+                    if f.is_different_from_parent() and f not in next_figure_set:
                         if point_target in f.new_points:
                             raise StopIteration(f)
                         next_figure_set.add(f)
