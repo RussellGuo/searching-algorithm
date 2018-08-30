@@ -17,6 +17,9 @@ def draw_result(fig: Figure, target_point: Point):
     color_frame      = ImageColor.colormap["darkgrey"]
     color_pre_line   = ImageColor.colormap["darkred"]
     color_ans_line   = ImageColor.colormap["darkblue"]
+    color_key_point  = ImageColor.colormap["yellow"]
+
+    radius_key_point = 5
 
     img = Image.new('RGB', (total_size, total_size), color_background)
     draw = ImageDraw.Draw(img)
@@ -46,6 +49,18 @@ def draw_result(fig: Figure, target_point: Point):
 
     for line_ in fig.lines:
         draw_line(line_)
+
+    def draw_point_cascade(e):
+        if type(e) is Point:
+            pos = coord_in_img(e)
+            r = radius_key_point
+            draw.ellipse( (pos[0] - r, pos[1] - r, pos[0] + r, pos[1] + r), color_key_point)
+        if type(e.obj_list) is list:
+            draw_point_cascade(e.obj_list[1])
+            draw_point_cascade(e.obj_list[2])
+        pass
+
+    draw_point_cascade(target_point)
 
     img.show()
 
