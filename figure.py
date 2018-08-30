@@ -102,9 +102,8 @@ def search(figure: Figure, point_target: Point):
         for p in o.new_points:
             if p == point_target:
                 print(p.details())
-                break
-        return o
-    return None
+                return o, p
+    return None, None
 
 
 def exam_22_17():
@@ -170,8 +169,7 @@ def exam_27_14():
 
 
 if __name__ == "__main__":
-    result = exam_27_14()
-    if result:
-        import draw_result
-        draw_result.draw_result(result)
-
+    fig, point = exam_27_14()
+    if fig:
+        import draw_searching_graph
+        draw_searching_graph.draw_result(fig, point)

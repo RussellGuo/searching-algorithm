@@ -6,7 +6,7 @@ from figure import Figure
 from geo import Point, Line
 
 
-def draw_result(fig: Figure, img_path=None):
+def draw_result(fig: Figure, target_point: Point):
     grid_size = 100
     line_width = 1
     grid_count = 6
@@ -35,11 +35,14 @@ def draw_result(fig: Figure, img_path=None):
         points = tuple(points)
         if type(line.obj_list) == list:
             color = color_ans_line
+            width = 3
         elif line.obj_list[0] in ('H', 'V'):
             color = color_frame
+            width = 1
         else:
             color = color_pre_line
-        draw.line([coord_in_img(points[0]), coord_in_img(points[1])], color)
+            width = 2
+        draw.line([coord_in_img(points[0]), coord_in_img(points[1])], color, width)
 
     for line_ in fig.lines:
         draw_line(line_)
