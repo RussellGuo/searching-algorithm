@@ -3,15 +3,19 @@ import math
 
 
 class Point:
-    def __init__(self, x: fractions.Fraction, y: fractions.Fraction, obj_list=None):
+    id: int = 0
+
+    def __init__(self, x: fractions.Fraction, y: fractions.Fraction, obj_tuple=None):
         self.x = x
         self.y = y
-        self.obj_list = obj_list
+        self.obj_tuple = obj_tuple
         self.hash = hash((self.x, self.y))
+        Point.id += 1
+        self.id = Point.id
 
     def __repr__(self):
-        if isinstance(self.obj_list, str):
-            return self.obj_list
+        if isinstance(self.obj_tuple, str):
+            return self.obj_tuple
         return '<%s, %s>' % (self.x, self.y)
 
     def __hash__(self):
@@ -36,23 +40,25 @@ class Point:
         return (self.y, self.x) >= (other.y, other.x)
 
     def details(self):
-        if self.obj_list is None:
+        if self.obj_tuple is None:
             return str(self)
-        if isinstance(self.obj_list, str):
-            return self.obj_list
+        if isinstance(self.obj_tuple, str):
+            return self.obj_tuple
         else:
-            return "%s(%s,%s)" % (self.obj_list[0], self.obj_list[1].details(), self.obj_list[2].details())
+            return "%s(%s,%s)" % (self.obj_tuple[0], self.obj_tuple[1].details(), self.obj_tuple[2].details())
 
     def middle(self, other):
-        return Point((self.x + other.x) / 2, (self.y + other.y) / 2, ["-", self, other])
+        return Point((self.x + other.x) / 2, (self.y + other.y) / 2, ("-", self, other))
 
     def l2(self, other):
         return (self.x - other.x) ** 2 + (self.y - other.y) ** 2
 
 
 class Line:
-    def __init__(self, _a: fractions.Fraction, _b: fractions.Fraction, _c: fractions.Fraction, obj_list=None):
-        self.obj_list = obj_list
+    id: int = 0
+
+    def __init__(self, _a: fractions.Fraction, _b: fractions.Fraction, _c: fractions.Fraction, obj_tuple=None):
+        self.obj_tuple = obj_tuple
 
         # try to normalize it
         denominator = _a.denominator * _b.denominator * _c.denominator
@@ -71,12 +77,14 @@ class Line:
             self.c *= -1
 
         self.hash = hash((self.a, self.b, self.c))
+        Line.id += 1
+        self.id = Line.id
 
     def contain_point(self, p: Point) -> bool:
         l = self.a * p.x + self.b * p.y - self.c
         return l == 0
 
-    def get_cross_point(self, other, new_point_checker=None) -> Point:
+    def get_cross_point(self, other, new_point_checker=None):
         def det2(_a, _b, _c, _d):
             return _a * _d - _b * _c
 
@@ -89,7 +97,7 @@ class Line:
         x, y = fractions.Fraction(dx, _d), fractions.Fraction(dy, _d)
         if new_point_checker and not new_point_checker(x, y):
             return None
-        return Point(x, y, ["X", self, other])
+        return Point(x, y, ("X", self, other))
 
     @staticmethod
     def get_line_contains_points(p1: Point, p2: Point):
@@ -98,7 +106,7 @@ class Line:
         a = p1.y - p2.y
         b = p2.x - p1.x
         c = p2.x * p1.y - p1.x * p2.y
-        line = Line(a, b, c, ["<>", p1, p2])
+        line = Line(a, b, c, ("<>", p1, p2))
         return line
 
     @staticmethod
@@ -108,7 +116,7 @@ class Line:
         a = other.a
         b = other.b
         c = a * p.x + b * p.y
-        line = Line(a, b, c, ["//", other, p])
+        line = Line(a, b, c, ("//", other, p))
         return line
 
     @staticmethod
@@ -118,12 +126,12 @@ class Line:
         a = other.b
         b = -other.a
         c = a * p.x + b * p.y
-        line = Line(a, b, c, ["-|", other, p])
+        line = Line(a, b, c, ("-|", other, p))
         return line
 
     def __repr__(self):
-        if isinstance(self.obj_list, str):
-            return self.obj_list
+        if isinstance(self.obj_tuple, str):
+            return self.obj_tuple
         return '<%s * x + %s * y = %s>' % (self.a, self.b, self.c)
 
     def __hash__(self):
@@ -148,12 +156,12 @@ class Line:
         return (self.a, self.b, self.c) != (other.a, other.b, other.c)
 
     def details(self):
-        if self.obj_list is None:
+        if self.obj_tuple is None:
             return str(self)
-        if isinstance(self.obj_list, str):
-            return self.obj_list
+        if isinstance(self.obj_tuple, str):
+            return self.obj_tuple
         else:
-            return "%s(%s,%s)" % (self.obj_list[0], self.obj_list[1].details(), self.obj_list[2].details())
+            return "%s(%s,%s)" % (self.obj_tuple[0], self.obj_tuple[1].details(), self.obj_tuple[2].details())
 
 
 def test_main():

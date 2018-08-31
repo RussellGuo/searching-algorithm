@@ -36,10 +36,10 @@ def draw_result(fig: Figure, target_point: Point):
     def draw_line(line):
         points = set(line.get_cross_point(frame_line, fig.new_point_checker) for frame_line in frame) - {None}
         points = tuple(points)
-        if type(line.obj_list) == list:
+        if type(line.obj_tuple) == tuple:
             color = color_ans_line
             width = 3
-        elif line.obj_list[0] in ('H', 'V'):
+        elif line.obj_tuple[0] in ('H', 'V'):
             color = color_frame
             width = 1
         else:
@@ -55,9 +55,9 @@ def draw_result(fig: Figure, target_point: Point):
             pos = coord_in_img(e)
             r = radius_key_point
             draw.ellipse( (pos[0] - r, pos[1] - r, pos[0] + r, pos[1] + r), color_key_point)
-        if type(e.obj_list) is list:
-            draw_point_cascade(e.obj_list[1])
-            draw_point_cascade(e.obj_list[2])
+        if type(e.obj_tuple) is tuple:
+            draw_point_cascade(e.obj_tuple[1])
+            draw_point_cascade(e.obj_tuple[2])
         pass
 
     draw_point_cascade(target_point)

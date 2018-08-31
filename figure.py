@@ -4,6 +4,8 @@ from geo import Point, Line
 
 
 class Figure:
+    id: int = 0
+
     def __init__(self, parent, line, new_point_checker=None):
 
         self.new_point_checker = new_point_checker or parent.new_point_checker
@@ -18,6 +20,9 @@ class Figure:
             if p and p not in self.base_points:
                 new_points.add(p)
         self.new_points = frozenset(new_points)
+
+        Figure.id += 1
+        self.id = Figure.id
 
     def get_new_potential_lines(self, for_new_point_only=False):
         lines = set()
@@ -67,16 +72,16 @@ def get_init_figure():
         init_figure = Figure(init_figure, vert_line, my_new_point_checker)
     init_figure.parent = None
     for p in init_figure.new_points | init_figure.base_points:
-        p.obj_list = "P%d%d" % (p.y, p.x)
+        p.obj_tuple = "P%d%d" % (p.y, p.x)
 
     return init_figure
 
 
-def search(figure: Figure, point_target: Point):
+def search(figure: Figure, point_target: Point, max_depth=3):
     current_figure_set = {figure}
 
     try:
-        for i in range(10):
+        for i in range(max_depth):
             print(i, len(current_figure_set))
             next_figure_set = set()
             while len(current_figure_set) > 0:
@@ -84,14 +89,20 @@ def search(figure: Figure, point_target: Point):
                 lines = (fig.get_new_potential_lines(i > 0))
                 for l in lines:
                     f = Figure(fig, l)
-                    if f.is_different_from_parent() and f not in next_figure_set:
+                    if i == max_depth - 1:  # last depth, reduce memory cost
+                        set_item = tuple(sorted(f.lines))
+                    else:
+                        set_item = f
+                    if f.is_different_from_parent() and set_item not in next_figure_set:
                         if point_target in f.new_points:
                             raise StopIteration(f)
-                        next_figure_set.add(f)
+                        next_figure_set.add(set_item)
                         ll = len(next_figure_set)
-                        if ll % 200 == 0:
+                        if ll % 10000 == 0:
                             print(ll)
             current_figure_set = next_figure_set
+        print(len(current_figure_set))
+        print(i, len(current_figure_set))
 
         pass  # Not found
     except StopIteration as e:
@@ -186,4 +197,5 @@ if __name__ == "__main__":
     fig, point = exam_27_15()
     if fig:
         import draw_searching_graph
+
         draw_searching_graph.draw_result(fig, point)
