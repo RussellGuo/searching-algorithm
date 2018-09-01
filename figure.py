@@ -193,8 +193,23 @@ def exam_27_15():
     return result
 
 
+def search_all():
+    init_figure = get_init_figure()
+
+    # create the example figure
+    exam_figure = init_figure
+    # this is the root
+    exam_figure.parent = None
+
+    # try to find it
+    point_target = Point(fractions.Fraction(-1), fractions.Fraction(0), "UNTOUCHABLE")
+    result = search(exam_figure, point_target, 2)
+    return result
+
+
 if __name__ == "__main__":
-    fig, point = exam_27_15()
+    fig, point = search_all()
+    print(Point.id, Line.id, Figure.id)
     if fig:
         import draw_searching_graph
 
