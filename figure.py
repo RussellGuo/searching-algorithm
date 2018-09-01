@@ -8,6 +8,7 @@ class Figure:
 
     def __init__(self, parent, line, new_point_checker=None):
 
+        self.parent = parent
         self.new_point_checker = new_point_checker or parent.new_point_checker
         base_lines = parent.lines if parent else frozenset()
         self.lines = frozenset(base_lines | {line})
@@ -24,7 +25,8 @@ class Figure:
         Figure.id += 1
         self.id = Figure.id
 
-    def get_new_potential_lines(self, for_new_point_only=False):
+    def get_new_potential_lines(self):
+        for_new_point_only = self.parent is not None
         lines = set()
 
         def append_line(p1, p2):
@@ -77,16 +79,20 @@ def get_init_figure():
     return init_figure
 
 
-def search(figure: Figure, point_target: Point, max_depth=3):
+def search(figure: Figure, point_target: Point, max_depth=3, dumper=None):
     current_figure_set = {figure}
 
+    if dumper:
+        dumper.new_root(figure)
+
     try:
+        i = 0
         for i in range(max_depth):
             print(i, len(current_figure_set))
             next_figure_set = set()
             while len(current_figure_set) > 0:
                 fig = current_figure_set.pop()
-                lines = (fig.get_new_potential_lines(i > 0))
+                lines = (fig.get_new_potential_lines())
                 for l in lines:
                     f = Figure(fig, l)
                     if i == max_depth - 1:  # last depth, reduce memory cost
@@ -94,6 +100,8 @@ def search(figure: Figure, point_target: Point, max_depth=3):
                     else:
                         set_item = f
                     if f.is_different_from_parent() and set_item not in next_figure_set:
+                        if dumper:
+                            dumper.new_figure(f, l, f.new_points)
                         if point_target in f.new_points:
                             raise StopIteration(f)
                         next_figure_set.add(set_item)
@@ -101,7 +109,6 @@ def search(figure: Figure, point_target: Point, max_depth=3):
                         if ll % 10000 == 0:
                             print(ll)
             current_figure_set = next_figure_set
-        print(len(current_figure_set))
         print(i, len(current_figure_set))
 
         pass  # Not found
@@ -193,23 +200,8 @@ def exam_27_15():
     return result
 
 
-def search_all():
-    init_figure = get_init_figure()
-
-    # create the example figure
-    exam_figure = init_figure
-    # this is the root
-    exam_figure.parent = None
-
-    # try to find it
-    point_target = Point(fractions.Fraction(-1), fractions.Fraction(0), "UNTOUCHABLE")
-    result = search(exam_figure, point_target, 2)
-    return result
-
-
 if __name__ == "__main__":
-    fig, point = search_all()
-    print(Point.id, Line.id, Figure.id)
+    fig, point = exam_27_15()
     if fig:
         import draw_searching_graph
 
