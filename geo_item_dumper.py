@@ -1,3 +1,5 @@
+import sqlite3
+import os
 from fractions import Fraction
 from typing import FrozenSet, Tuple
 
@@ -61,6 +63,47 @@ class GeoItemDumperConsole(GeoItemDumperBase):
         print(self.point_count, self.line_count, self.figure_count)
 
 
+class GeoItemDumperSqlite(GeoItemDumperBase):
+
+    def __init__(self, db_file_name='graph.db'):
+        super().__init__()
+        self.db_file_name = db_file_name
+        self.connect = None
+        self.cursor = None
+
+    def open(self):
+        try:
+            os.remove(self.db_file_name)
+        except FileNotFoundError:
+            pass
+        self.connect = sqlite3.connect(self.db_file_name)
+        self.cursor = self.connect.cursor()
+        self.cursor.execute("create table figure (id integer, parent_id integer, line_id integer)")
+        self.cursor.execute("create table line   (id integer, a integer, b integer, c integer, point1_id, point2_id)")
+        self.cursor.execute("create table point  (id integer, " +
+                            "x_numerator integer, x_denominator integer, y_numerator integer, y_denominator integer, " +
+                            "line1_id integer, line2_id integer)")
+
+    def output_table(self, table_name: str, values:Tuple):
+        sql_cmd = 'insert into %s values%s' % (table_name, values)
+        self.cursor.execute(sql_cmd)
+
+    def output_figure(self, values: Tuple[int, int, int]):
+        self.output_table("figure", values)
+
+    def output_line(self, values: Tuple[int, int, int, int, int, int]):
+        self.output_table("line", values)
+
+    def output_point(self, values: Tuple[int, int, int, int, int, int, int]):
+        self.output_table("point", values)
+
+    def close(self):
+        self.cursor.close()
+        self.connect.commit()
+        self.connect.close()
+        print(self.point_count, self.line_count, self.figure_count)
+
+
 def dump_every_graph():
     from figure import get_init_figure, search
     init_figure = get_init_figure()
@@ -72,7 +115,7 @@ def dump_every_graph():
 
     # try to find it
     point_target = Point(Fraction(-1), Fraction(0), "UNTOUCHABLE")
-    dumper = GeoItemDumperConsole()
+    dumper = GeoItemDumperSqlite()
     dumper.open()
     search(exam_figure, point_target, 3, dumper)
     dumper.close()
