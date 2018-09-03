@@ -47,9 +47,6 @@ class Figure:
                     append_line(p_1, p_2)
         return lines
 
-    def is_different_from_parent(self):
-        return len(self.new_points) > 0
-
     def __eq__(self, other):
         return self.lines == other.lines
 
@@ -99,7 +96,7 @@ def search(figure: Figure, point_target: Point, max_depth=3, dumper=None):
                         set_item = tuple(sorted(f.lines))
                     else:
                         set_item = f
-                    if f.is_different_from_parent() and set_item not in next_figure_set:
+                    if set_item not in next_figure_set:
                         if dumper:
                             dumper.new_figure(f, l, f.new_points)
                         if point_target in f.new_points:
