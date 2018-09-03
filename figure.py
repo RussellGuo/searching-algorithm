@@ -26,7 +26,6 @@ class Figure:
         self.id = Figure.id
 
     def get_new_potential_lines(self):
-        for_new_point_only = self.parent is not None
         lines = set()
 
         def append_line(p1, p2):
@@ -34,17 +33,12 @@ class Figure:
             if l and l not in self.lines:
                 lines.add(l)
 
-        if for_new_point_only:
-            for p_1 in self.new_points:
-                for p_2 in self.base_points:
-                    append_line(p_1, p_2)
-        else:
-            points = tuple(sorted(self.new_points | self.base_points))
-            for i in range(len(points)):
-                p_1 = points[i]
-                for j in range(i + 1, len(points)):
-                    p_2 = points[j]
-                    append_line(p_1, p_2)
+        points = tuple(sorted(self.new_points | self.base_points))
+        for i in range(len(points)):
+            p_1 = points[i]
+            for j in range(i + 1, len(points)):
+                p_2 = points[j]
+                append_line(p_1, p_2)
         return lines
 
     def __eq__(self, other):
