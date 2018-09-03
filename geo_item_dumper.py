@@ -79,7 +79,8 @@ class GeoItemDumperSqlite(GeoItemDumperBase):
         self.connect = sqlite3.connect(self.db_file_name)
         self.cursor = self.connect.cursor()
         self.cursor.execute("create table figure (id integer, parent_id integer, line_id integer)")
-        self.cursor.execute("create table line   (id integer, a integer, b integer, c integer, point1_id, point2_id)")
+        self.cursor.execute("create table line   (id integer, a integer, b integer, c integer, " +
+                            "point1_id integer, point2_id integer)")
         self.cursor.execute("create table point  (id integer, " +
                             "x_numerator integer, x_denominator integer, y_numerator integer, y_denominator integer, " +
                             "line1_id integer, line2_id integer)")
@@ -104,7 +105,7 @@ class GeoItemDumperSqlite(GeoItemDumperBase):
         print(self.point_count, self.line_count, self.figure_count)
 
 
-def dump_every_graph():
+def dump_whole_graph():
     from figure import get_init_figure, search
     init_figure = get_init_figure()
 
@@ -122,5 +123,5 @@ def dump_every_graph():
 
 
 if __name__ == "__main__":
-    dump_every_graph()
+    dump_whole_graph()
     print(Point.id, Line.id, Figure.id)
