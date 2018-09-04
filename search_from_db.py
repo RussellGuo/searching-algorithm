@@ -1,6 +1,8 @@
+import copy
 import sqlite3
 from fractions import Fraction
 
+from draw_searching_graph import draw_result
 from figure import Figure
 from geo import Point, Line
 
@@ -76,9 +78,11 @@ class Searching:
         cursor_searching_points = self.connect.cursor()
         cursor_searching_points.execute(sql_smt, cond)
         search_result = []
+        depth = 0
         for point_id in cursor_searching_points:
-            r = self.build_point_by_id(point_id[0])
-            search_result.append(r)
+            point_found = self.build_point_by_id(point_id[0])
+            figure_found = self.build_figure_by_point(point_found)
+            search_result.append((point_found, figure_found))
             pass
 
         cursor_searching_points.close()
@@ -118,8 +122,33 @@ class Searching:
         line = Line.get_line_contains_points(point1, point2)
         return line
 
+    def build_figure_by_point(self, point: Point) -> Figure:
+        figure = copy.deepcopy(self.init_figure)
+
+        def add_point(p: Point):
+            if p in figure.new_points | figure.base_points:
+                return
+            line1, line2 = p.obj_tuple[1:]
+            add_line(line1)
+            add_line(line2)
+
+        def add_line(line: Line):
+            nonlocal figure
+            if line in figure.lines:
+                return
+            p1,p2 = line.obj_tuple[1:]
+            add_point(p1)
+            add_point(p2)
+            figure = Figure(figure, line)
+
+        add_point(point)
+        return figure
+
 
 if __name__ == '__main__':
     s = Searching()
-    r = s.search_point_id_list(Point(Fraction(1, 2), Fraction(1, 2)))
+    r = s.search_point_id_list(Point(Fraction(1, 3), Fraction(1, 2)))
+    for re in r:
+        f,p = re
+        draw_result(p, f)
     pass
