@@ -9,7 +9,11 @@ class Figure:
     def __init__(self, parent, line, new_point_checker=None):
 
         self.parent = parent
-        self.new_point_checker = new_point_checker or parent.new_point_checker
+        if parent:
+            self.new_point_checker = new_point_checker or parent.new_point_checker
+        else:
+            self.new_point_checker = None
+
         base_lines = parent.lines if parent else frozenset()
         self.lines = frozenset(base_lines | {line})
         self.hash = hash(self.lines)
@@ -40,6 +44,14 @@ class Figure:
                 p_2 = points[j]
                 append_line(p_1, p_2)
         return lines
+
+    def level(self):
+        result = 0
+        start = self
+        while start:
+            start = start.parent
+            result +=1
+        return result
 
     def __eq__(self, other):
         return self.lines == other.lines
