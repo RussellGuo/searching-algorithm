@@ -5,6 +5,7 @@ from geo import Point, Line
 
 class Figure:
     id: int = 0
+    static_init_figure = None
 
     def __init__(self, parent, line, point_checker=None):
 
@@ -62,6 +63,15 @@ class Figure:
                 return p
         assert False
 
+    def compact(self):
+        if Figure.static_init_figure is None:
+            Figure.static_init_figure = get_init_figure()
+
+        ret = []
+        for line in sorted(self.lines - Figure.static_init_figure.lines):
+            ret.extend([line.a, line.b, line.c])
+        return tuple(ret)
+
     def __eq__(self, other):
         return self.lines == other.lines
 
@@ -116,7 +126,7 @@ def search(figure: Figure, point_target: Point, max_depth=3, dumper=None):
                 for l in lines:
                     f = Figure(fig, l)
                     if i == max_depth - 1:  # last depth, reduce memory cost
-                        set_item = tuple(sorted(f.lines))
+                        set_item = f.compact()
                     else:
                         set_item = f
                     if set_item not in next_figure_set:
