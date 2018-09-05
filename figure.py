@@ -6,11 +6,11 @@ from geo import Point, Line
 class Figure:
     id: int = 0
 
-    def __init__(self, parent, line, new_point_checker=None):
+    def __init__(self, parent, line, point_checker=None):
 
         self.parent = parent
         if parent:
-            self.new_point_checker = new_point_checker or parent.new_point_checker
+            self.new_point_checker = point_checker or parent.new_point_checker
         else:
             self.new_point_checker = None
 
@@ -50,8 +50,17 @@ class Figure:
         start = self
         while start:
             start = start.parent
-            result +=1
+            result += 1
         return result
+
+    def find_point(self, point: Point) -> Point:
+        total = self.base_points | self.new_points
+        if point not in total:
+            raise FileNotFoundError
+        for p in total:
+            if p == point:
+                return p
+        assert False
 
     def __eq__(self, other):
         return self.lines == other.lines
@@ -60,21 +69,29 @@ class Figure:
         return self.hash
 
 
-def get_init_figure():
+def get_standard_pointer_checker():
     zero = fractions.Fraction(0)
-    one = fractions.Fraction(1)
     max_ = fractions.Fraction(6)
-    init_figure = None
 
     def my_new_point_checker(x: fractions.Fraction, y: fractions.Fraction):
         return max_ >= x >= zero and max_ >= y >= zero
+
+    return my_new_point_checker
+
+
+def get_init_figure():
+    zero = fractions.Fraction(0)
+    one = fractions.Fraction(1)
+    init_figure = None
+
+    point_checker = get_standard_pointer_checker()
 
     for i in range(7):
         step = fractions.Fraction(i)
         horn_line = Line(zero, one, step, "H%d" % i)
         vert_line = Line(one, zero, step, "V%d" % i)
-        init_figure = Figure(init_figure, horn_line, my_new_point_checker)
-        init_figure = Figure(init_figure, vert_line, my_new_point_checker)
+        init_figure = Figure(init_figure, horn_line, point_checker)
+        init_figure = Figure(init_figure, vert_line, point_checker)
     init_figure.parent = None
     for p in init_figure.new_points | init_figure.base_points:
         p.obj_tuple = "P%d%d" % (p.y, p.x)
@@ -120,10 +137,9 @@ def search(figure: Figure, point_target: Point, max_depth=3, dumper=None):
         for l in o.lines:
             print(l.details())
             print(l)
-        for p in o.new_points:
-            if p == point_target:
-                print(p.details())
-                return o, p
+        p = o.find_point(point_target)
+        print(p.details())
+        return o, p
     return None, None
 
 
@@ -203,9 +219,13 @@ def exam_27_15():
     return result
 
 
-if __name__ == "__main__":
+def test():
     fig, point = exam_27_15()
     if fig:
         import draw_searching_graph
 
         draw_searching_graph.draw_result(fig, point)
+
+
+if __name__ == "__main__":
+    test()

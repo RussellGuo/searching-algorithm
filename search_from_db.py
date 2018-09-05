@@ -3,7 +3,7 @@ import sqlite3
 from fractions import Fraction
 
 from draw_searching_graph import draw_result
-from figure import Figure
+from figure import Figure, get_standard_pointer_checker
 from geo import Point, Line
 
 
@@ -44,7 +44,7 @@ class Searching:
         # init_figure created
         self.init_figure = None
         for line in self.init_lines.values():
-            self.init_figure = Figure(self.init_figure, line)
+            self.init_figure = Figure(self.init_figure, line, get_standard_pointer_checker())
         self.init_figure.parent = None
 
         # init points
@@ -58,18 +58,12 @@ class Searching:
             point_id, x_numerator, x_denominator, y_numerator, y_denominator, line1_id, line2_id = point_db
             assert (line1_id, line2_id) == (0, 0)
             point = Point(Fraction(x_numerator, x_denominator), Fraction(y_numerator, y_denominator))
-            for p in self.init_figure.base_points | self.init_figure.new_points:
-                if p == point:
-                    self.init_points[point_id] = p
-                    if x_denominator == y_denominator == 1:
-                        p.obj_tuple = "P%d%d" % (y_numerator, x_numerator)
-                    else:
-                        p.obj_tuple = "P(%d/%d,%d/%d)" % (y_numerator, y_denominator, x_numerator, x_denominator)
-                    break
+            p = self.init_figure.find_point(point)
+            self.init_points[point_id] = p
+            if x_denominator == y_denominator == 1:
+                p.obj_tuple = "P%d%d" % (y_numerator, x_numerator)
             else:
-                assert False
-
-        pass
+                p.obj_tuple = "P(%d/%d,%d/%d)" % (y_numerator, y_denominator, x_numerator, x_denominator)
 
     def search_point_id_list(self, point: Point):
         sql_smt = 'select id from point where x_numerator = ? and x_denominator = ? and ' + \
@@ -80,75 +74,89 @@ class Searching:
         search_result = []
         depth = 0
         for point_id in cursor_searching_points:
-            point_found = self.build_point_by_id(point_id[0])
-            figure_found = self.build_figure_by_point(point_found)
-            search_result.append((point_found, figure_found))
-            pass
+            fig_id = self.get_figure_id_from_point_id(point_id[0])
+            fig = self.build_figure_by_id(fig_id)
+
+            dep = fig.level()
+            if depth == 0:
+                depth = dep
+            if dep > depth:
+                break
+            point_found = fig.find_point(point)
+            search_result.append((point_found, fig))
 
         cursor_searching_points.close()
         return search_result
 
-    def build_point_by_id(self, point_id: int) -> Point:
+    def build_figure_by_id(self, fig_id) -> Figure:
+        if fig_id == self.init_figure_id:
+            return copy.deepcopy(self.init_figure)
 
-        if point_id in self.init_points:
-            fig = self.init_figure
-            point = self.init_points[point_id]
-            return point
+        # recursive building
+        # 1st, find the parent
+        cursor = self.connect.cursor()
+        cursor.execute('select parent_id, line_id from figure where id = ?', (fig_id,))
+        row = cursor.fetchall()
+        cursor.close()
+        assert len(row) == 1
+        parent_id, line_id = row[0]
+        parent = self.build_figure_by_id(parent_id)
 
-        sql_smt = 'select line1_id, line2_id from point where id = ?'
-        cursor_point = self.connect.cursor()
-        cursor_point.execute(sql_smt, (point_id,))
-        point_node = cursor_point.fetchall()
-        cursor_point.close()
-        assert len(point_node) == 1
-        line1_id, line2_id = point_node[0]
-        line1 = self.build_line_by_id(line1_id)
-        line2 = self.build_line_by_id(line2_id)
-        point = line1.get_cross_point(line2)
-        return point
-
-    def build_line_by_id(self, line_id: int) -> Line:
-        if line_id in self.init_lines:
-            return self.init_lines[line_id]
-
+        # 2nd, find the line
         cursor = self.connect.cursor()
         cursor.execute("select point1_id, point2_id from line where id = ?", (line_id,))
         row = cursor.fetchall()
         cursor.close()
         assert len(row) == 1
-        point1_id, point2_id = row[0]
-        point1 = self.build_point_by_id(point1_id)
-        point2 = self.build_point_by_id(point2_id)
-        line = Line.get_line_contains_points(point1, point2)
-        return line
 
-    def build_figure_by_point(self, point: Point) -> Figure:
-        figure = copy.deepcopy(self.init_figure)
+        points = []
+        for point_id in row[0]:
+            cursor = self.connect.cursor()
+            sql_smt = "select x_numerator, x_denominator, y_numerator, y_denominator from point where id = ?"
+            cursor.execute(sql_smt, (point_id,))
+            row = cursor.fetchall()
+            cursor.close()
+            assert len(row) == 1
+            x_numerator, x_denominator, y_numerator, y_denominator = row[0]
+            point = Point(Fraction(x_numerator, x_denominator), Fraction(y_numerator, y_denominator), "temp")
+            p = parent.find_point(point)
+            points.append(p)
+        line = Line.get_line_contains_points(points[0], points[1])
 
-        def add_point(p: Point):
-            if p in figure.new_points | figure.base_points:
-                return
-            line1, line2 = p.obj_tuple[1:]
-            add_line(line1)
-            add_line(line2)
+        # 3rd, finished it
+        fig = Figure(parent, line)
+        return fig
 
-        def add_line(line: Line):
-            nonlocal figure
-            if line in figure.lines:
-                return
-            p1,p2 = line.obj_tuple[1:]
-            add_point(p1)
-            add_point(p2)
-            figure = Figure(figure, line)
+    def get_figure_id_from_point_id(self, point_id: int) -> int:
 
-        add_point(point)
-        return figure
+        if point_id in self.init_points:
+            return self.init_figure_id
+
+        sql_smt = 'select line1_id, line2_id from point where id = ?'
+        cursor = self.connect.cursor()
+        cursor.execute(sql_smt, (point_id,))
+        row = cursor.fetchall()
+        cursor.close()
+        assert len(row) == 1
+        line_id = max(row[0])
+
+        cursor = self.connect.cursor()
+        cursor.execute('select id from figure where line_id = ?', (line_id,))
+        row = cursor.fetchall()
+        cursor.close()
+        assert len(row) == 1
+
+        return row[0][0]
 
 
-if __name__ == '__main__':
+def test():
     s = Searching()
     r = s.search_point_id_list(Point(Fraction(1, 3), Fraction(1, 2)))
     for re in r:
-        f,p = re
+        f, p = re
         draw_result(p, f)
     pass
+
+
+if __name__ == '__main__':
+    test()
