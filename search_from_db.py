@@ -14,10 +14,12 @@ class Searching:
         self.connect = sqlite3.connect(Searching.db_file_name)
         cursor = self.connect.cursor()
 
+        self.prepare_database()
+
         # to find all the init-figure, points and lines
 
         # init figure
-        cursor.execute('select * from figure where parent_id = 0')
+        cursor.execute('select * from init_figure')
         init_figure_row = cursor.fetchall()
         cursor.close()
         assert (len(init_figure_row) == 1)
@@ -26,7 +28,7 @@ class Searching:
         # init lines
         self.init_lines = {}
         cursor = self.connect.cursor()
-        cursor.execute('select * from line where point1_id = 0 or point2_id = 0')
+        cursor.execute('select * from init_line')
         for line in cursor:
             line_id, line_a, line_b, line_c, p1_id, p2_id = line
             assert (p1_id, p2_id) == (0, 0)
@@ -50,7 +52,7 @@ class Searching:
         # init points
         self.init_points = {}
         cursor = self.connect.cursor()
-        cursor.execute('select * from point where line1_id = 0 or line2_id = 0')
+        cursor.execute('select * from init_point')
         points_in_db = cursor.fetchall()
         cursor.close()
         assert len(points_in_db) == len(self.init_figure.base_points) + len(self.init_figure.new_points)
@@ -64,6 +66,23 @@ class Searching:
                 p.obj_tuple = "P%d%d" % (y_numerator, x_numerator)
             else:
                 p.obj_tuple = "P(%d/%d,%d/%d)" % (y_numerator, y_denominator, x_numerator, x_denominator)
+
+    def prepare_database(self):
+        cmds = (
+            "create table if not exists init_line as select * from line where point1_id = 0 or point2_id = 0",
+            "create table if not exists init_point  as select * from point where line1_id = 0 or line2_id = 0",
+            "create table if not exists init_figure as select * from figure where parent_id = 0",
+            "create unique index if not exists figure_id_idx on figure(id)",
+            "create unique index if not exists point_id_idx on point(id)",
+            "create unique index if not exists line_id_idx on line(id)",
+            "create index if not exists point_value_idx on point" 
+            "(x_numerator, x_denominator, y_numerator, y_denominator)",
+            "create unique index if not exists line_id_to_figure_id_idx on figure(line_id)"
+        )
+        cursor = self.connect.cursor()
+        for cmd in cmds:
+            cursor.execute(cmd)
+        cursor.close()
 
     def search_point_id_list(self, point: Point):
         sql_smt = 'select id from point where x_numerator = ? and x_denominator = ? and ' + \
@@ -151,7 +170,7 @@ class Searching:
 
 def test():
     s = Searching()
-    r = s.search_point_id_list(Point(Fraction(1, 3), Fraction(1, 2)))
+    r = s.search_point_id_list(Point(Fraction(1, 1), Fraction(1, 2)))
     for re in r:
         f, p = re
         draw_result(p, f)
