@@ -75,7 +75,7 @@ class Searching:
             "create unique index if not exists figure_id_idx on figure(id)",
             "create unique index if not exists point_id_idx on point(id)",
             "create unique index if not exists line_id_idx on line(id)",
-            "create index if not exists point_value_idx on point" 
+            "create index if not exists point_value_idx on point"
             "(x_numerator, x_denominator, y_numerator, y_denominator)",
             "create unique index if not exists line_id_to_figure_id_idx on figure(line_id)"
         )
@@ -167,10 +167,58 @@ class Searching:
 
         return row[0][0]
 
+    def get_figure_vector(self, fig_id):
+        if fig_id == self.init_figure_id:
+            return ()
+
+        # recursive building
+        # 1st, find the parent
+        cursor = self.connect.cursor()
+        cursor.execute('select parent_id, line_id from figure where id = ?', (fig_id,))
+        row = cursor.fetchall()
+        cursor.close()
+        assert len(row) == 1
+        parent_id, line_id = row[0]
+        parent = self.get_figure_vector(parent_id)
+
+        # 2nd, find the line
+        cursor = self.connect.cursor()
+        cursor.execute("select a, b, c from line where id = ?", (line_id,))
+        row = cursor.fetchall()
+        cursor.close()
+        assert len(row) == 1
+        a, b, c = row[0]
+
+        return parent + (a, b, c)
+
+    def figure_vectors_iter(self):
+        cursor = self.connect.cursor()
+        cursor.execute("select id from figure")
+        vv = []
+        for row in cursor:
+            fig_id = row[0]
+            v = self.get_figure_vector(fig_id)
+            yield v
+        cursor.close()
+
+
+def dump_figure_into_bin():
+    s = Searching()
+    it = s.figure_vectors_iter()
+    import array
+
+    max_depth = 3
+    file_obj_list = [open("figure-%d.bin" % (i + 1), "wb") for i in range(max_depth)]
+    for v in it:
+        a = array.array("h", v)
+        if v:
+            a.tofile(file_obj_list[len(v) // 3 - 1])
+    [file_obj_list[i].close() for i in range(max_depth)]
+
 
 def test():
     s = Searching()
-    r = s.search_point_id_list(Point(Fraction(1, 1), Fraction(1, 2)))
+    r = s.search_point_id_list(Point(Fraction(5339, 1794), Fraction(919, 299)))
     for re in r:
         f, p = re
         draw_result(p, f)
