@@ -165,11 +165,11 @@ class Line:
 
 
 def test_main():
-    pb = Point(fractions.Fraction(2), fractions.Fraction(5), "B")
-    pc = Point(fractions.Fraction(5), fractions.Fraction(4), "C")
+    pb = Point(fractions.Fraction(4), fractions.Fraction(1), "B")
+    pc = Point(fractions.Fraction(1), fractions.Fraction(2), "C")
     la = Line.get_line_contains_points(pb, pc)
-    p1 = Point(fractions.Fraction(1), fractions.Fraction(3), "p1")
-    p2 = Point(fractions.Fraction(1), fractions.Fraction(2), "p2")
+    p1 = Point(fractions.Fraction(5), fractions.Fraction(3), "p1")
+    p2 = Point(fractions.Fraction(5), fractions.Fraction(4), "p2")
     lc = Line.get_line_contains_points(pb, p1)
     lb = Line.get_line_contains_points(pc, p2)
     pa = Line.get_cross_point(lb, lc)

@@ -208,7 +208,7 @@ def dump_figure_into_bin():
     import array
 
     max_depth = 3
-    file_obj_list = [open("figure-%d.bin" % (i + 1), "wb") for i in range(max_depth)]
+    file_obj_list = [open("figure-level%d.bin" % (i + 1), "wb") for i in range(max_depth)]
     for v in it:
         a = array.array("h", v)
         if v:
