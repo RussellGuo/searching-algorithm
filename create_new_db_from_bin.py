@@ -38,20 +38,17 @@ class NewDBCreator:
         self.prepare_database()
 
         self.last_id_of_figure = self.last_id_of_line = self.last_id_of_point = 0
+        self.line_memory_table = {}
+        self.point_memory_table = {}
 
     def prepare_database(self):
         cmd_lst = (
-            "create table point(id integer primary key,"
+            "create table point(id integer,"
             " x_numerator integer, x_denominator integer, y_numerator integer, y_denominator integer)",
-            "create unique index point_value_idx on point(x_numerator, x_denominator, y_numerator, y_denominator)",
-            "create table line(id integer primary key, a integer, b integer, c integer)",
-            "create unique index line_value_idx on line(a, b, c)",
-            "create table figure(id integer primary key, level integer)",
+            "create table line(id integer, a integer, b integer, c integer)",
+            "create table figure(id integer, level integer)",
             "create table figure_line(figure_id integer, line_id integer)",
-            "create index figure_line_idx on figure_line(figure_id)",
             "create table point_figure(point_id integer, figure_id integer)",
-            "create index point_figure_idx1 on point_figure(point_id)",
-            "create index point_figure_idx2 on point_figure(figure_id)",
         )
         cursor = self.connect.cursor()
         for cmd in cmd_lst:
@@ -76,20 +73,15 @@ class NewDBCreator:
         for p in fig.new_points:
             self.save_into_point_table_etc(id_of_figure, level, p)
 
-        self.connect.commit()
+        # self.connect.commit()
 
     def get_line_id_by_param(self, abc):
-        cursor = self.connect.cursor()
-        cursor.execute("select id from line where a = ? and b = ? and c = ?", abc)
-        row = cursor.fetchall()
-        cursor.close()
+        if abc in self.line_memory_table:
+            return self.line_memory_table[abc]
 
-        if len(row) == 1:
-            return row[0][0]
-        if len(row) != 0:
-            assert False
         self.last_id_of_line += 1
         id_of_line = self.last_id_of_line
+        self.line_memory_table[abc] = id_of_line
         cursor = self.connect.cursor()
         cursor.execute("insert into line values(?,?,?,?)", (id_of_line,) + abc)
         cursor.close()
@@ -101,55 +93,38 @@ class NewDBCreator:
         cursor.close()
 
     def save_into_point_table_etc(self, fig_id: int, fig_level: int, point: Point):
-        x_numerator, x_denominator, y_numerator, y_denominator = \
-            point.x.numerator, point.x.denominator, point.y.numerator, point.y.denominator
+        point_vector = (point.x.numerator, point.x.denominator, point.y.numerator, point.y.denominator)
 
         # find point_id
-        cursor = self.connect.cursor()
-        cursor.execute(
-            "select id from point where x_numerator = ? and x_denominator = ? and y_numerator = ? and y_denominator = ?",
-            (x_numerator, x_denominator, y_numerator, y_denominator))
-        row = cursor.fetchall()
-        cursor.close()
-        assert len(row) <= 1
-        exists_in_table_before = len(row) == 1
-
-        if exists_in_table_before:
-            point_id = row[0][0]
-
-            # let check if this point is generated at lower figure
-            cursor = self.connect.cursor()
-            cursor.execute(
-                "select 1 from point_figure, figure where"
-                " point_figure.point_id = ? and figure.id = point_figure.figure_id and figure.level < ?",
-                (point_id, fig_level))
-            exists_at_lower_figure = cursor.fetchone() is not None
-            if exists_at_lower_figure:
-                pass
-            cursor.close()
-
+        if point_vector in self.point_memory_table:
+            point_id, level = self.point_memory_table[point_vector]
+            if level < fig_level:
+                return # no need to save this point into point_figure table
         else:
             self.last_id_of_point += 1
             point_id = self.last_id_of_point
+            self.point_memory_table[point_vector] = (point_id, fig_level)
             cursor = self.connect.cursor()
             cursor.execute("insert into point values(?,?,?,?,?)",
-                           (point_id, x_numerator, x_denominator, y_numerator, y_denominator))
+                           (point_id,) + point_vector)
             cursor.close()
-            exists_at_lower_figure = False  # because it's a new point
 
         # update point_figure table
-        if not exists_at_lower_figure:
-            # should added the connection table for figure
-            cursor = self.connect.cursor()
-            cursor.execute("insert into point_figure values(?,?)", (point_id, fig_id))
-            cursor.close()
+        # should added the connection table for figure
+        cursor = self.connect.cursor()
+        cursor.execute("insert into point_figure values(?,?)", (point_id, fig_id))
+        cursor.close()
 
 
 def main():
     db_creator = NewDBCreator()
 
+    i = 0
     for figure_params in bin_figure_iter():
         db_creator.append_figure_by_params_of_lines(figure_params)
+        i += 1
+        if i % 10000 == 0:
+            print(i)
 
 
 if __name__ == '__main__':
