@@ -73,8 +73,6 @@ class NewDBCreator:
         for p in fig.new_points:
             self.save_into_point_table_etc(id_of_figure, level, p)
 
-        # self.connect.commit()
-
     def get_line_id_by_param(self, abc):
         if abc in self.line_memory_table:
             return self.line_memory_table[abc]
@@ -99,7 +97,7 @@ class NewDBCreator:
         if point_vector in self.point_memory_table:
             point_id, level = self.point_memory_table[point_vector]
             if level < fig_level:
-                return # no need to save this point into point_figure table
+                return  # no need to save this point into point_figure table
         else:
             self.last_id_of_point += 1
             point_id = self.last_id_of_point
@@ -115,6 +113,9 @@ class NewDBCreator:
         cursor.execute("insert into point_figure values(?,?)", (point_id, fig_id))
         cursor.close()
 
+    def database_commit(self):
+        self.connect.commit()
+
 
 def main():
     db_creator = NewDBCreator()
@@ -125,6 +126,8 @@ def main():
         i += 1
         if i % 10000 == 0:
             print(i)
+            db_creator.database_commit()
+    db_creator.database_commit()
 
 
 if __name__ == '__main__':
