@@ -9,7 +9,7 @@ class Point:
         self.x = x
         self.y = y
         self.obj_tuple = obj_tuple
-        self.hash = hash((self.x, self.y))
+        self.hash = None
         Point.id += 1
         self.id = Point.id
 
@@ -19,6 +19,8 @@ class Point:
         return '<%s, %s>' % (self.x, self.y)
 
     def __hash__(self):
+        if self.hash is None:
+            self.hash = hash((self.x, self.y))
         return self.hash
 
     def __eq__(self, other):
@@ -76,7 +78,7 @@ class Line:
             self.b *= -1
             self.c *= -1
 
-        self.hash = hash((self.a, self.b, self.c))
+        self.hash = None
         Line.id += 1
         self.id = Line.id
 
@@ -135,6 +137,8 @@ class Line:
         return '<%s * x + %s * y = %s>' % (self.a, self.b, self.c)
 
     def __hash__(self):
+        if self.hash is None:
+            self.hash = hash((self.a, self.b, self.c))
         return self.hash
 
     def __eq__(self, other):

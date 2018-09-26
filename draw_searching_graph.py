@@ -24,14 +24,14 @@ def draw_result(fig: Figure, target_point: Point):
     img = Image.new('RGB', (total_size, total_size), color_background)
     draw = ImageDraw.Draw(img)
 
-    line_top    = Line(Fraction(0), Fraction(1), Fraction(0))
-    line_bottom = Line(Fraction(0), Fraction(1), Fraction(6))
-    line_left   = Line(Fraction(1), Fraction(0), Fraction(0))
-    line_right  = Line(Fraction(1), Fraction(0), Fraction(6))
+    line_top    = Line(Fraction(0), Fraction(1), Fraction(-3))
+    line_bottom = Line(Fraction(0), Fraction(1), Fraction(+3))
+    line_left   = Line(Fraction(1), Fraction(0), Fraction(-3))
+    line_right  = Line(Fraction(1), Fraction(0), Fraction(+3))
     frame = (line_top, line_bottom, line_left, line_right)
 
     def coord_in_img(p: Point):
-        return margin + p.x * grid_size, margin + (grid_count - p.y) * grid_size
+        return margin + (p.x + 3)* grid_size, margin + (grid_count - p.y - 3) * grid_size
 
     def draw_line(line):
         points = set(line.get_cross_point(frame_line, fig.new_point_checker) for frame_line in frame) - {None}

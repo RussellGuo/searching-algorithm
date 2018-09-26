@@ -104,11 +104,11 @@ class Figure:
 
 
 def get_standard_pointer_checker():
-    zero = fractions.Fraction(0)
-    max_ = fractions.Fraction(6)
+    min_ = fractions.Fraction(-3)
+    max_ = fractions.Fraction(+3)
 
     def my_new_point_checker(x: fractions.Fraction, y: fractions.Fraction):
-        return max_ >= x >= zero and max_ >= y >= zero
+        return max_ >= x >= min_ and max_ >= y >= min_
 
     return my_new_point_checker
 
@@ -120,15 +120,15 @@ def get_init_figure():
 
     point_checker = get_standard_pointer_checker()
 
-    for i in range(7):
+    for i in range(-3,4):
         step = fractions.Fraction(i)
-        horn_line = Line(zero, one, step, "H%d" % i)
-        vert_line = Line(one, zero, step, "V%d" % i)
+        horn_line = Line(zero, one, step, "H%+d" % i)
+        vert_line = Line(one, zero, step, "V%+d" % i)
         init_figure = Figure(init_figure, horn_line, point_checker)
         init_figure = Figure(init_figure, vert_line, point_checker)
     init_figure.parent = None
     for p in init_figure.new_points | init_figure.base_points:
-        p.obj_tuple = "P%d%d" % (p.y, p.x)
+        p.obj_tuple = "P%+d%+d" % (p.y, p.x)
 
     return init_figure
 
