@@ -1,4 +1,5 @@
 import itertools
+import time
 from fractions import Fraction
 
 from draw_searching_graph import draw_result
@@ -87,6 +88,9 @@ def bfs_dump_for_pythagorea(init_param_lines, coord_grid=3, max_depth=3):
             fig_list = point_tab[point_vector]
         except KeyError:
             fig_list = point_tab[point_vector] = []
+            if len(point_tab) % 10000 == 0:
+                print(len(point_tab), time.time())
+
         return fig_list
 
     init_lines = set([Line(i[0], i[1], i[2]) for i in init_param_lines])
@@ -109,7 +113,9 @@ def bfs_dump_for_pythagorea(init_param_lines, coord_grid=3, max_depth=3):
         get_ref_of_line((line.a, line.b, line.c))
 
     for level in range(max_depth + 1):
-        current_figure_set = [ fig for fig in fig_tab if get_fig_level(fig) == level]
+        print(level, time.time())
+        current_figure_set = [fig for fig in fig_tab if get_fig_level(fig) == level]
+        print(level, len(current_figure_set), time.time())
         for cur_fig in current_figure_set:
             # find all the point and record them
             # should use all lines cross (all lines + init_lines)
@@ -130,24 +136,23 @@ def bfs_dump_for_pythagorea(init_param_lines, coord_grid=3, max_depth=3):
 
             # produce next level
             if level == max_depth:
-                continue  # no need to do
+                continue  # no need to do for the last level
             new_lines = set([Line.get_line_contains_points(p0, p1) for p0, p1 in
                              itertools.product(new_points, new_points | init_points)]) - {None}
             for line in new_lines | first_level_lines:
                 if line and line not in all_lines:  # is different with current
                     line_param = get_ref_of_line((line.a, line.b, line.c))
-                    new_fig = tuple(sorted(cur_fig+ (line_param,)))
+                    new_fig = tuple(sorted(cur_fig + (line_param,)))
                     new_figs = figure_symmetry_all(new_fig)
                     for fig in new_figs:
                         if fig in fig_tab:
                             break
                     else:
                         new_fig = get_ref_of_fig(new_fig)
-                        if len(fig_tab) % 10000 == 0:
-                            print(len(fig_tab))
 
-    print( len(point_tab), len(fig_tab), len(line_tab))
-    print (point_tab.__sizeof__(), fig_tab.__sizeof__(), line_tab.__sizeof__())
+    print(len(point_tab), len(fig_tab), len(line_tab), time.time())
+    print(point_tab.__sizeof__(), fig_tab.__sizeof__(), line_tab.__sizeof__(), time.time())
+
     return point_tab
 
 
@@ -159,7 +164,11 @@ def test_bfs_dump():
         init_param_lines.append((1, 0, i), )
     init_param_lines.sort()
     point_tab = bfs_dump_for_pythagorea(init_param_lines, coord_grid, 3)
+    import pickle
+    f = open("points", "wb")
+    pickle.dump(point_tab, f, -1)
     pass
+    f.close()
 
 
 if __name__ == '__main__':
