@@ -67,7 +67,7 @@ def get_fig_level(fig):
 
 def bfs_dump_for_pythagorea(init_param_lines, coord_grid=3, max_depth=3):
     line_tab = {}
-    fig_tab = {}
+    fig_tab = set()
     point_tab = {}
 
     def pointer_checker(x: Fraction, y: Fraction) -> bool:
@@ -78,9 +78,6 @@ def bfs_dump_for_pythagorea(init_param_lines, coord_grid=3, max_depth=3):
 
     def get_ref_of_line(abc):
         return get_stored_object(line_tab, abc)
-
-    def get_ref_of_fig(fig):
-        return get_stored_object(fig_tab, fig)
 
     def list_of_fig_which_has_point(point):
         point_vector = (point.x.numerator, point.x.denominator, point.y.numerator, point.y.denominator)
@@ -96,7 +93,8 @@ def bfs_dump_for_pythagorea(init_param_lines, coord_grid=3, max_depth=3):
     init_lines = set([Line(i[0], i[1], i[2]) for i in init_param_lines])
     init_points = get_points_in_one_lines_set(init_lines)
 
-    init_fig = get_ref_of_fig(())
+    init_fig = ()
+    fig_tab.add(init_fig)
     for p in init_points:
         fig_lst = list_of_fig_which_has_point(p)
         fig_lst.append(init_fig)
@@ -148,7 +146,7 @@ def bfs_dump_for_pythagorea(init_param_lines, coord_grid=3, max_depth=3):
                         if fig in fig_tab:
                             break
                     else:
-                        new_fig = get_ref_of_fig(new_fig)
+                        fig_tab.add(new_fig)
 
     print(len(point_tab), len(fig_tab), len(line_tab), time.time())
     print(point_tab.__sizeof__(), fig_tab.__sizeof__(), line_tab.__sizeof__(), time.time())
