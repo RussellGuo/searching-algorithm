@@ -53,14 +53,6 @@ def all_lines_for_points(points):
     return lines
 
 
-def get_stored_object(the_dict, value):
-    try:
-        ref = the_dict[value]
-    except KeyError:
-        ref = the_dict[value] = value
-    return ref
-
-
 def get_fig_level(fig):
     return len(fig)
 
@@ -77,7 +69,11 @@ def bfs_dump_for_pythagorea(init_param_lines, coord_grid=3, max_depth=3):
         return scale_checker(x) and scale_checker(y)
 
     def get_ref_of_line(abc):
-        return get_stored_object(line_tab, abc)
+        try:
+            ref = line_tab[abc]
+        except KeyError:
+            ref = line_tab[abc] = abc
+        return ref
 
     def list_of_fig_which_has_point(point):
         point_vector = (point.x.numerator, point.x.denominator, point.y.numerator, point.y.denominator)
