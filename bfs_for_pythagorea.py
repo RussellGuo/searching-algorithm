@@ -30,7 +30,7 @@ def figure_symmetry_all(lines):
 
 
 def test_sym():
-    a = ((1, 1, 0), (2, 1, 0))
+    a = ((5, 1, 8), (5, 19, -10), (43, 76, -109))
     b = figure_symmetry_all(a)
     print(a, b)
     for f in b:
@@ -119,7 +119,7 @@ def bfs_dump_for_pythagorea(init_param_lines, coord_grid=3, max_depth=3):
             new_points = set()
             for line_a, line_b in it:
                 p = line_a.get_cross_point(line_b, pointer_checker)
-                if p:
+                if p and p not in new_points:
                     new_points.add(p)
 
                     # added into point->figure table if it's worth
@@ -150,7 +150,7 @@ def bfs_dump_for_pythagorea(init_param_lines, coord_grid=3, max_depth=3):
     return point_tab
 
 
-def test_bfs_dump():
+def get_pythagorea_graph():
     coord_grid = 3
     init_param_lines = []
     for i in range(-coord_grid, coord_grid + 1):
@@ -158,11 +158,12 @@ def test_bfs_dump():
         init_param_lines.append((1, 0, i), )
     init_param_lines.sort()
     point_tab = bfs_dump_for_pythagorea(init_param_lines, coord_grid, 3)
-    import pickle
-    f = open("points", "wb")
-    pickle.dump(point_tab, f, -1)
-    pass
-    f.close()
+    return point_tab
+
+
+def test_bfs_dump():
+    point_tab = get_pythagorea_graph()
+    pass  # set breakpoint here for debugging
 
 
 if __name__ == '__main__':

@@ -80,20 +80,26 @@ class Figure:
     @classmethod
     def build_figure_by_params_of_lines(cls, params_of_lines, keep_traceable_for_elem=False):
         fig = Figure.get_static_init_figure()
-        for line_param in params_of_lines:
-            a, b, c = line_param
-            line = Line(a, b, c)
-            if keep_traceable_for_elem:
-                point_list = []
-                for point in fig.new_points | fig.base_points:
-                    if line.contain_point(point):
-                        point_list.append(point)
-                        if len(point_list) == 2:
-                            break
-                else:
-                    assert False
-                line = Line.get_line_contains_points(point_list[0], point_list[1])
-            fig = Figure(fig, line)
+
+        lines = set(params_of_lines)
+        while lines:
+            for params_of_line in lines:
+                a, b, c = params_of_line
+                line = Line(a, b, c)
+                if keep_traceable_for_elem:
+                    point_list = []
+                    for point in fig.new_points | fig.base_points:
+                        if line.contain_point(point):
+                            point_list.append(point)
+                            if len(point_list) == 2:
+                                break
+                    else:
+                        continue  # this line doesn't contain 2 found points
+                    assert len(point_list) >= 2
+                    line = Line.get_line_contains_points(point_list[0], point_list[1])
+                    fig = Figure(fig, line)
+                    lines.remove(params_of_line)
+                    break  # next line, please
         return fig
 
     def __eq__(self, other):
