@@ -5,7 +5,8 @@ class Graph:
     __line_cache = {}
     __figure_cache = {}
 
-    def __init__(self):
+    def __init__(self, output_name=None):
+        self.output_file = open(output_name, "w") if output_name else None
         self.point_figure_table = {}
 
     @staticmethod
@@ -18,10 +19,13 @@ class Graph:
         return ref
 
     def add_point_figure_relation(self, point, figure):
-
+        sorted_figure = tuple(sorted(figure))
+        if self.output_file:
+            self.output_file.write(str((point, sorted_figure)) + "\n")
+            return
         # lines processing
         lines = []
-        for line in figure:
+        for line in sorted_figure:
             ll = Graph.get_ref_from_cache(Graph.__line_cache, line)
             lines.append(ll)
         lines.sort()
@@ -38,6 +42,9 @@ class Graph:
             fig_list_for_point.append(ref_fig)
 
         pass
+
+    def close(self):
+        self.output_file.close()
 
 
 def get_cached_pythagorea_graph(cache_file_name="point_to_figure.pickle"):
@@ -91,33 +98,35 @@ def iter_of_figure_and_point_symmetry(point, fig_list):
             ((+0, -1), (-1, +0)),
     ):
         p0 = mat_mul(_mat, (point[0], point[2]))
-        p0 = (p0[0], point[1], p0[1], point[3])
+        pd = mat_mul(_mat, (point[1], point[3]))
+        p = (p0[0], abs(pd[0]) , p0[1], abs(pd[1]))
         for fig in fig_list:
             fig0 = [normalized_line(mat_mul(_mat, l[:2]) + (l[2],)) for l in fig]
-            yield (p0, tuple(fig0))
+            yield (p, tuple(fig0))
 
 
 def test():
     total_data = pickle.load(open("points.185", "rb"))
-    total_graph = Graph()
+    total_graph = Graph("points.185.txt")
     while total_data:
         point, fig_list = total_data.popitem()
         for fig in fig_list:
             total_graph.add_point_figure_relation(point, fig)
     del total_data
-    print(len(total_graph.point_figure_table))
+    total_graph.close()
+    del total_graph
 
     for file_name in ('points+', 'points++', "point_to_figure.pickle"):
         with open(file_name, 'rb') as f:
             io_data = pickle.load(f)
-            whole_data = Graph()
+            whole_data = Graph(file_name + ".txt")
             while io_data:
                 point, fig_list = io_data.popitem()
                 for p_f_pair in iter_of_figure_and_point_symmetry(point, fig_list):
                     new_point, new_fig = p_f_pair
                     whole_data.add_point_figure_relation(new_point, new_fig)
             del io_data
-            print(file_name, len(whole_data.point_figure_table))
+            whole_data.close()
             del whole_data
 
 
