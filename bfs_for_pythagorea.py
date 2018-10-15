@@ -2,9 +2,7 @@ import itertools
 import time
 from fractions import Fraction
 
-from draw_searching_graph import draw_result
-from figure import Figure
-from geo import Point, Line
+from geo import Line
 
 
 def figure_symmetry_all(lines):
@@ -27,15 +25,6 @@ def figure_symmetry_all(lines):
     figs1 = figure_symmetry_hv(lines)
     figs2 = figure_symmetry_hv(figure_swap_xy(lines))
     return figs1 | figs2
-
-
-def test_sym():
-    a = ((5, 1, 8), (5, 19, -10), (43, 76, -109))
-    b = figure_symmetry_all(a)
-    print(a, b)
-    for f in b:
-        fig = Figure.build_figure_by_params_of_lines(f, True)
-        draw_result(fig, Point(0, 0))
 
 
 def get_points_in_two_lines_set(lines_a, lines_b):
@@ -167,5 +156,4 @@ def test_bfs_dump():
 
 
 if __name__ == '__main__':
-    # test_sym()
     test_bfs_dump()

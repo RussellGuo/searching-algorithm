@@ -131,20 +131,19 @@ def test():
     del total_graph
 
     for file_name in ("point_to_figure.pickle",):
-        with open(file_name, 'rb') as f:
-            io_data = pickle.load(f)
-            whole_data = Graph(file_name + ".txt")
-            while io_data:
-                point, fig_list = io_data.popitem()
-                ll = len(io_data)
-                if ll % 10000 == 0:
-                    print(ll)
-                for p_f_pair in iter_of_figure_and_point_symmetry(point, fig_list):
-                    new_point, new_fig = p_f_pair
-                    whole_data.add_point_figure_relation(new_point, new_fig)
-            del io_data
-            whole_data.close()
-            del whole_data
+        io_data = get_cached_pythagorea_graph(file_name)
+        whole_data = Graph(file_name + ".txt")
+        while io_data:
+            point, fig_list = io_data.popitem()
+            ll = len(io_data)
+            if ll % 10000 == 0:
+                print(ll)
+            for p_f_pair in iter_of_figure_and_point_symmetry(point, fig_list):
+                new_point, new_fig = p_f_pair
+                whole_data.add_point_figure_relation(new_point, new_fig)
+        del io_data
+        whole_data.close()
+        del whole_data
 
     # should compare point_to_figure.pickle.txt and points.185.txt, the sorted version.
     #     sort -u point_to_figure.pickle.txt -o point_to_figure.pickle.sorted.txt
