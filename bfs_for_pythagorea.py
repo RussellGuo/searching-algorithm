@@ -27,6 +27,21 @@ def figure_symmetry_all(lines):
     return figs1 | figs2
 
 
+def points_symmetry_all(point):
+    x_numerator, x_denominator, y_numerator, y_denominator = point
+    ret = {
+        (+x_numerator, x_denominator, +y_numerator, y_denominator),
+        (-x_numerator, x_denominator, +y_numerator, y_denominator),
+        (+x_numerator, x_denominator, -y_numerator, y_denominator),
+        (-x_numerator, x_denominator, -y_numerator, y_denominator),
+        (+y_numerator, y_denominator, +x_numerator, x_denominator),
+        (-y_numerator, y_denominator, +x_numerator, x_denominator),
+        (+y_numerator, y_denominator, -x_numerator, x_denominator),
+        (-y_numerator, y_denominator, -x_numerator, x_denominator),
+    }
+    return ret
+
+
 def get_points_in_two_lines_set(lines_a, lines_b):
     points = set(a.get_cross_point(b) for a, b in itertools.product(lines_a, lines_b)) - {None}
     return points
@@ -75,6 +90,19 @@ def bfs_dump_for_pythagorea(init_param_lines, coord_grid=3, max_depth=3):
 
         return fig_list
 
+    def check_if_symmetry_point_exists_in_low_level(point):
+        points = points_symmetry_all(point)
+        for p in points:
+            try:
+                _fig_lst = point_tab[p]
+                if _fig_lst:
+                    ll = len(_fig_lst[0])
+                    if ll < level:
+                        return True
+            except KeyError:
+                continue
+        return False
+
     init_lines = set([Line(i[0], i[1], i[2]) for i in init_param_lines])
     init_points = get_points_in_one_lines_set(init_lines)
 
@@ -112,9 +140,10 @@ def bfs_dump_for_pythagorea(init_param_lines, coord_grid=3, max_depth=3):
                     new_points.add(p)
 
                     # added into point->figure table if it's worth
-                    p_fig_list = list_of_fig_which_has_point(p)
-                    p_exists_in_lower = p_fig_list and get_fig_level(p_fig_list[0]) < level
+                    p_exists_in_lower = check_if_symmetry_point_exists_in_low_level(
+                        (p.x.numerator, p.x.denominator, p.y.numerator, p.y.denominator))
                     if not p_exists_in_lower:
+                        p_fig_list = list_of_fig_which_has_point(p)
                         p_fig_list.append(cur_fig)
 
             # produce next level
