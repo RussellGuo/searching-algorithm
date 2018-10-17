@@ -7,11 +7,8 @@ from geo import Point
 
 
 class NewDBQuery:
-    from create_new_db_from_bin import NewDBCreator
-    db_file_name = NewDBCreator.db_file_name
-
-    def __init__(self):
-        self.db_file_name = NewDBQuery.db_file_name
+    def __init__(self, db_file_name='new_graph.db'):
+        self.db_file_name = db_file_name
         self.connect = sqlite3.connect(self.db_file_name)
 
     def query_point(self, point: Point):
