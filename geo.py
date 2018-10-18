@@ -3,15 +3,11 @@ import math
 
 
 class Point:
-    id: int = 0
-
     def __init__(self, x: fractions.Fraction, y: fractions.Fraction, obj_tuple=None):
         self.x = x
         self.y = y
         self.obj_tuple = obj_tuple
         self.hash = None
-        Point.id += 1
-        self.id = Point.id
 
     def __repr__(self):
         if isinstance(self.obj_tuple, str):
@@ -57,8 +53,6 @@ class Point:
 
 
 class Line:
-    id: int = 0
-
     def __init__(self, _a: fractions.Fraction, _b: fractions.Fraction, _c: fractions.Fraction, obj_tuple=None):
         self.obj_tuple = obj_tuple
 
@@ -79,8 +73,6 @@ class Line:
             self.c *= -1
 
         self.hash = None
-        Line.id += 1
-        self.id = Line.id
 
     def contain_point(self, p: Point) -> bool:
         l = self.a * p.x + self.b * p.y - self.c

@@ -1,4 +1,28 @@
 import pickle
+from fractions import Fraction
+
+
+def GRID_SIZE():
+    return 3
+
+
+def INIT_FIGURE():
+    coord_grid = GRID_SIZE()
+    init_lines = []
+    for i in range(-coord_grid, coord_grid + 1):
+        init_lines.append((0, 1, i), )
+        init_lines.append((1, 0, i), )
+    init_lines.sort()
+    return init_lines
+
+
+def POINT_CHECKER(grid_size):
+    def point_checker(x: Fraction, y: Fraction) -> bool:
+        def scale_checker(scale: Fraction) -> bool:
+            return abs(scale.numerator) <= abs(scale.denominator) * grid_size
+
+        return scale_checker(x) and scale_checker(y)
+    return point_checker
 
 
 def get_cached_pythagorea_graph(cache_file_name="point_to_figure.pickle"):

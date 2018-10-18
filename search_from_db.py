@@ -1,8 +1,8 @@
 import sqlite3
 from fractions import Fraction
 
+import common
 from draw_searching_graph import draw_result
-from figure import Figure
 from geo import Point
 
 
@@ -26,22 +26,23 @@ class NewDBQuery:
             line_query = 'select a,b,c from line, figure_line where figure_id = ? and line_id = line.id'
             cursor.execute(line_query, (matched_fig_id,))
             lines = cursor.fetchall()
-            fig = Figure.build_figure_by_params_of_lines(lines, True)
-            p = fig.find_point(point)
-            result.append((p, fig))
+            result.append(tuple(lines))
             cursor.close()
 
         return result
 
 
 def main():
+    init_figure, grid_size = common.INIT_FIGURE(), common.GRID_SIZE()
     db_query = NewDBQuery()
-    p = Point(Fraction(5339, 1794), Fraction(919, 299))
+    # to find init points
+    # select * from point_figure, point
+    #     where point.id = point_figure.point_id and figure_id = (select id from figure where level = 0)
+    p = Point(Fraction(5339, 1794) - 3, Fraction(919, 299) - 3)
     p = Point(Fraction(1, 3), Fraction(3, 1))
     r = db_query.query_point(p)
     for re in r:
-        p, f = re
-        draw_result(f, p)
+        draw_result(re, p, init_figure, grid_size)
     pass
 
 

@@ -1,7 +1,9 @@
 import itertools
 import time
 from fractions import Fraction
+from typing import Callable
 
+import common
 from geo import Line
 
 
@@ -66,11 +68,7 @@ def bfs_dump_for_pythagorea(init_param_lines, coord_grid=3, max_depth=3):
     fig_tab = set()
     point_tab = {}
 
-    def pointer_checker(x: Fraction, y: Fraction) -> bool:
-        def scale_checker(scale: Fraction) -> bool:
-            return abs(scale.numerator) <= abs(scale.denominator) * coord_grid
-
-        return scale_checker(x) and scale_checker(y)
+    point_checker: Callable[[Fraction, Fraction], bool] = common.POINT_CHECKER(coord_grid)
 
     def get_ref_of_line(abc):
         try:
@@ -135,7 +133,7 @@ def bfs_dump_for_pythagorea(init_param_lines, coord_grid=3, max_depth=3):
             it = itertools.product(geo_lines, all_lines)
             new_points = set()
             for line_a, line_b in it:
-                p = line_a.get_cross_point(line_b, pointer_checker)
+                p = line_a.get_cross_point(line_b, point_checker)
                 if p and p not in new_points:
                     new_points.add(p)
 
@@ -169,13 +167,7 @@ def bfs_dump_for_pythagorea(init_param_lines, coord_grid=3, max_depth=3):
 
 
 def get_pythagorea_graph():
-    coord_grid = 3
-    init_param_lines = []
-    for i in range(-coord_grid, coord_grid + 1):
-        init_param_lines.append((0, 1, i), )
-        init_param_lines.append((1, 0, i), )
-    init_param_lines.sort()
-    point_tab = bfs_dump_for_pythagorea(init_param_lines, coord_grid, 3)
+    point_tab = bfs_dump_for_pythagorea(common.INIT_FIGURE(), common.GRID_SIZE(), 3)
     return point_tab
 
 
