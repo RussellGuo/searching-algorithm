@@ -31,6 +31,22 @@ class NewDBQuery:
 
         return result
 
+    def query_point_by_symmetry(self, point):
+        point_vector = (point.x.numerator, point.x.denominator, point.y.numerator, point.y.denominator)
+
+        mat_table = common.get_symmetry_matrix_table()
+        result = []
+        for mat in mat_table:
+            p = common.apply_mat_on_point(point_vector, mat)
+            p0 = Point(Fraction(p[0], p[1]), Fraction(p[2], p[3]))
+            fig_list = self.query_point(p0)
+            for fig in fig_list:
+                fig0 = common.apply_mat_on_figure(fig, mat)
+                result.append( tuple(fig0))
+        result = list(set(result))
+        result.sort()
+        return result
+
 
 def main():
     init_figure, grid_size = common.INIT_FIGURE(), common.GRID_SIZE()
@@ -40,8 +56,8 @@ def main():
     #     where point.id = point_figure.point_id and figure_id = (select id from figure where level = 0)
     p = Point(Fraction(5339, 1794) - 3, Fraction(919, 299) - 3)
     p = Point(Fraction(1, 3), Fraction(3, 1))
-    r = db_query.query_point(p)
-    for re in r:
+    r = db_query.query_point_by_symmetry(p)
+    for re in r[:10]:
         draw_result(re, p, init_figure, grid_size)
     pass
 
