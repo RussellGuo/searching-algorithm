@@ -3,7 +3,7 @@ from fractions import Fraction
 import common
 from draw_searching_graph import draw_result
 from geo import Point
-from save_to_db_for_bfs_dump_result import DBQuery
+from db_for_bfs_dump_result import DBQuery
 
 
 def main():
