@@ -1,7 +1,9 @@
 import os
 import sqlite3
+from fractions import Fraction
 
-from common import get_cached_pythagorea_graph
+import common
+from geo import Point
 
 
 class DBCreator:
@@ -130,7 +132,51 @@ class DBCreator:
         self.finished_database()
 
 
+class DBQuery:
+    def __init__(self, db_file_name='new_graph.db'):
+        self.db_file_name = db_file_name
+        self.connect = sqlite3.connect(self.db_file_name)
+
+    def query_point(self, point: Point):
+        cond = (point.x.numerator, point.x.denominator, point.y.numerator, point.y.denominator)
+        sql_smt = 'select figure_id from point, point_figure where point.id = point_figure.point_id and' \
+                  ' x_numerator = ? and x_denominator = ? and y_numerator = ? and y_denominator = ?'
+        cursor = self.connect.cursor()
+        cursor.execute(sql_smt, cond)
+        matched_fig_id_list = [row[0] for row in cursor]
+        cursor.close()
+
+        result = []
+        for matched_fig_id in matched_fig_id_list:
+            cursor = self.connect.cursor()
+            line_query = 'select a,b,c from line, figure_line where figure_id = ? and line_id = line.id'
+            cursor.execute(line_query, (matched_fig_id,))
+            lines = cursor.fetchall()
+            result.append(tuple(lines))
+            cursor.close()
+
+        return result
+
+    def query_point_by_symmetry(self, point):
+        point_vector = (point.x.numerator, point.x.denominator, point.y.numerator, point.y.denominator)
+
+        mat_table = common.get_symmetry_matrix_table()
+        result = []
+        for mat in mat_table:
+            p = common.apply_mat_on_point(point_vector, mat)
+            p0 = Point(Fraction(p[0], p[1]), Fraction(p[2], p[3]))
+            fig_list = self.query_point(p0)
+            for fig in fig_list:
+                fig0 = common.apply_mat_on_figure(fig, common.inv_for_symmetry_mat(mat))
+                result.append(tuple(fig0))
+        result = list(set(result))
+        result.sort()
+        return result
+
+
 if __name__ == '__main__':
+    from common import get_cached_pythagorea_graph
+
     db = DBCreator()
     point_fig_list = get_cached_pythagorea_graph()
     db.dump_whole_table_of_point_fig_list(point_fig_list)
