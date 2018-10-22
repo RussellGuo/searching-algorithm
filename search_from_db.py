@@ -41,8 +41,8 @@ class NewDBQuery:
             p0 = Point(Fraction(p[0], p[1]), Fraction(p[2], p[3]))
             fig_list = self.query_point(p0)
             for fig in fig_list:
-                fig0 = common.apply_mat_on_figure(fig, mat)
-                result.append( tuple(fig0))
+                fig0 = common.apply_mat_on_figure(fig, common.inv_for_symmetry_mat(mat))
+                result.append(tuple(fig0))
         result = list(set(result))
         result.sort()
         return result

@@ -100,3 +100,10 @@ def iter_of_figure_and_point_symmetry(point, fig_list):
         for fig in fig_list:
             fig0 = apply_mat_on_figure(fig, mat)
             yield (p, tuple(fig0))
+
+
+def inv_for_symmetry_mat(mat):
+    det = mat[0][0] * mat[1][1] - mat[0][1] * mat[1][0]
+    assert abs(det) == 1
+    inv_mat = ((mat[1][1] // det, -mat[0][1] // det), (-mat[1][0] // det, mat[0][0] // det))
+    return inv_mat
