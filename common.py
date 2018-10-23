@@ -1,4 +1,5 @@
 import pickle
+import sys
 
 
 def GRID_SIZE():
@@ -41,9 +42,11 @@ def get_cached_pythagorea_graph(cache_file_name="point_to_figure.pickle"):
     ret = get_cached_data()
     if not ret:
         # generated it
+        print("the BFS searching result NOT ready, building it", file=sys.stderr)
         data = bfs_for_pythagorea.get_pythagorea_graph()
 
         # save if
+        print("Saving BFS searching result into a pickle file", file=sys.stderr)
         with open(cache_file_name, "wb") as write_f:
             pickle.dump(data, write_f, -1)
         del data

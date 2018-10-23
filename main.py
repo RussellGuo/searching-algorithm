@@ -1,14 +1,23 @@
+#!/usr/bin/env python3
+
+import sys
 from fractions import Fraction
 
 import common
 from draw_searching_graph import draw_result
 from geo import Point
-from db_for_bfs_dump_result import DBQuery
+from db_for_bfs_dump_result import DBQuery, build_db
 
 
 def main():
+    try:
+        db_query = DBQuery()
+    except FileNotFoundError:  # build it
+        print("the database NOT ready, building it", file=sys.stderr)
+        build_db()
+        db_query = DBQuery()
+
     init_figure, grid_size = common.INIT_FIGURE(), common.GRID_SIZE()
-    db_query = DBQuery()
     # to find init points
     # select * from point_figure, point
     #     where point.id = point_figure.point_id and figure_id = (select id from figure where level = 0)

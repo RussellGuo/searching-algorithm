@@ -1,5 +1,6 @@
 import os
 import sqlite3
+import sys
 from fractions import Fraction
 
 import common
@@ -136,6 +137,10 @@ class DBQuery:
     def __init__(self, db_file_name='new_graph.db'):
         self.db_file_name = db_file_name
         self.connect = sqlite3.connect(self.db_file_name)
+        try:
+            self.query_point(Point(Fraction(0), Fraction(0)))
+        except Exception:
+            raise FileNotFoundError
 
     def query_point(self, point: Point):
         cond = (point.x.numerator, point.x.denominator, point.y.numerator, point.y.denominator)
@@ -174,11 +179,16 @@ class DBQuery:
         return result
 
 
-if __name__ == '__main__':
+def build_db(name=None):
     from common import get_cached_pythagorea_graph
 
-    db = DBCreator()
+    db = DBCreator(name) if name else DBCreator()
     point_fig_list = get_cached_pythagorea_graph()
+    print("Saving BFS searching result into the database", file=sys.stderr)
     db.dump_whole_table_of_point_fig_list(point_fig_list)
     db.database_commit()
-    pass
+    print("Saved", file=sys.stderr)
+
+
+if __name__ == '__main__':
+    build_db()
