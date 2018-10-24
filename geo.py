@@ -1,9 +1,9 @@
-import fractions
 import math
+from fractions import Fraction
 
 
 class Point:
-    def __init__(self, x: fractions.Fraction, y: fractions.Fraction, obj_tuple=None):
+    def __init__(self, x: Fraction, y: Fraction, obj_tuple=None):
         self.x = x
         self.y = y
         self.obj_tuple = obj_tuple
@@ -53,7 +53,7 @@ class Point:
 
 
 class Line:
-    def __init__(self, _a: fractions.Fraction, _b: fractions.Fraction, _c: fractions.Fraction, obj_tuple=None):
+    def __init__(self, _a: Fraction, _b: Fraction, _c: Fraction, obj_tuple=None):
         self.obj_tuple = obj_tuple
 
         # try to normalize it
@@ -88,7 +88,7 @@ class Line:
 
         dx = det2(self.c, self.b, other.c, other.b)
         dy = det2(self.a, self.c, other.a, other.c)
-        x, y = fractions.Fraction(dx, _d), fractions.Fraction(dy, _d)
+        x, y = Fraction(dx, _d), Fraction(dy, _d)
         if new_point_checker and not new_point_checker(x, y):
             return None
         return Point(x, y, ("X", self, other))
@@ -122,6 +122,34 @@ class Line:
         c = a * p.x + b * p.y
         line = Line(a, b, c, ("-|", other, p))
         return line
+
+    @staticmethod
+    def get_bisectors_for_2lines(line1, line2):
+        a1, b1, c1 = line1.a, line1.b, line1.c
+        a2, b2, c2 = line2.a, line2.b, line2.c
+        l1 = a1 ** 2 + b1 ** 2
+        l2 = a2 ** 2 + b2 ** 2
+        ll = l1 * l2
+        sqrt_ll = int(ll ** 0.5)
+        if sqrt_ll ** 2 != ll:
+            raise ValueError
+
+        bis1_a = l2 * a1 - sqrt_ll * a2
+        bis1_b = l2 * b1 - sqrt_ll * b2
+        bis1_c = l2 * c1 - sqrt_ll * c2
+
+        bis1 = Line(bis1_a, bis1_b, bis1_c)
+
+        bis2_a = l2 * a1 + sqrt_ll * a2
+        bis2_b = l2 * b1 + sqrt_ll * b2
+        bis2_c = l2 * c1 + sqrt_ll * c2
+
+        bis2 = Line(bis2_a, bis2_b, bis2_c)
+
+        result = list({bis1, bis2} - {None})
+        result.sort(key=lambda _l: math.atan2(_l.a, -_l.b))
+
+        return result
 
     def __repr__(self):
         if isinstance(self.obj_tuple, str):
@@ -161,11 +189,11 @@ class Line:
 
 
 def test_main():
-    pb = Point(fractions.Fraction(4), fractions.Fraction(1), "B")
-    pc = Point(fractions.Fraction(1), fractions.Fraction(2), "C")
+    pb = Point(Fraction(4) - 3, Fraction(1) - 3, "B")
+    pc = Point(Fraction(1) - 3, Fraction(2) - 3, "C")
     la = Line.get_line_contains_points(pb, pc)
-    p1 = Point(fractions.Fraction(5), fractions.Fraction(3), "p1")
-    p2 = Point(fractions.Fraction(5), fractions.Fraction(4), "p2")
+    p1 = Point(Fraction(5) - 3, Fraction(3) - 3, "p1")
+    p2 = Point(Fraction(5) - 3, Fraction(4) - 3, "p2")
     lc = Line.get_line_contains_points(pb, p1)
     lb = Line.get_line_contains_points(pc, p2)
     pa = Line.get_cross_point(lb, lc)
@@ -185,6 +213,11 @@ def test_main():
     print(la.contain_point(pm))
 
     print(pa.middle(pm))
+
+    ll = Line.get_bisectors_for_2lines(lb, lc)
+    print(ll)
+
+
 
 
 if __name__ == "__main__":
