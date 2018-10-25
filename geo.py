@@ -138,13 +138,13 @@ class Line:
         bis1_b = l2 * b1 - sqrt_ll * b2
         bis1_c = l2 * c1 - sqrt_ll * c2
 
-        bis1 = Line(bis1_a, bis1_b, bis1_c)
+        bis1 = Line(bis1_a, bis1_b, bis1_c, ('bisector1', line1, line2))
 
         bis2_a = l2 * a1 + sqrt_ll * a2
         bis2_b = l2 * b1 + sqrt_ll * b2
         bis2_c = l2 * c1 + sqrt_ll * c2
 
-        bis2 = Line(bis2_a, bis2_b, bis2_c)
+        bis2 = Line(bis2_a, bis2_b, bis2_c, ('bisector2', line1, line2))
 
         result = list({bis1, bis2} - {None})
         result.sort(key=lambda _l: math.atan2(_l.a, -_l.b))
@@ -216,8 +216,6 @@ def test_main():
 
     ll = Line.get_bisectors_for_2lines(lb, lc)
     print(ll)
-
-
 
 
 if __name__ == "__main__":
