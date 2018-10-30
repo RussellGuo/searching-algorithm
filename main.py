@@ -21,7 +21,7 @@ def get_query_obj() -> DBQuery:
     return db_query
 
 
-def exam_22_17(query):
+def question_22_17(query):
     VertexB = Point(Fraction(1), Fraction(-2), "B")
     VertexC = Point(Fraction(-2), Fraction(-1), "C")
     EdgeA = Line.get_line_contains_points(VertexB, VertexC)
@@ -52,14 +52,14 @@ def exam_22_17(query):
 
     init_figure, grid_size = common.INIT_FIGURE(), common.GRID_SIZE()
     init_figure.extend(TriangleEdges)
-    targets = (VertexOfTargetDiamondInsideEdgeC, VertexOfTargetDiamondInsideEdgeB, VertexOfTargetDiamondInsideEdgeA)
+    targets = (VertexOfTargetDiamondInsideEdgeA, VertexOfTargetDiamondInsideEdgeB, VertexOfTargetDiamondInsideEdgeC)
     for r in resolution_for_all:
         draw_resolution(r, targets, init_figure, grid_size)
 
 
 def main():
     db_query = get_query_obj()
-    exam_22_17(db_query)
+    question_22_17(db_query)
 
 
 if __name__ == '__main__':
