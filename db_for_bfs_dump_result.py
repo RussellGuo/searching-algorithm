@@ -182,8 +182,8 @@ class DBQuery:
 def build_db(name=None):
     from common import get_cached_pythagorea_graph
 
-    db = DBCreator(name) if name else DBCreator()
-    point_fig_list = get_cached_pythagorea_graph()
+    db = DBCreator("full.db")
+    point_fig_list = get_cached_pythagorea_graph("full.pickle")
     print("Saving BFS searching result into the database", file=sys.stderr)
     db.dump_whole_table_of_point_fig_list(point_fig_list)
     db.database_commit()
