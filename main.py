@@ -32,16 +32,16 @@ def question_22_17(query):
     del p1, p2
 
     BisectorAngleA = Line.get_bisectors_for_2lines(EdgeB, EdgeC)[0]
-    VertexOfTargetDiamondInsideEdgeA = EdgeA.get_cross_point(BisectorAngleA)
+    VertexOfTargetRhombusInsideEdgeA = EdgeA.get_cross_point(BisectorAngleA)
 
-    EageOfTargetDiamondParallelsToEdgeC = Line.get_line_parallel_to(EdgeC, VertexOfTargetDiamondInsideEdgeA)
-    EageOfTargetDiamondParallelsToEdgeB = Line.get_line_parallel_to(EdgeB, VertexOfTargetDiamondInsideEdgeA)
-    VertexOfTargetDiamondInsideEdgeB = Line.get_cross_point(EageOfTargetDiamondParallelsToEdgeC, EdgeB)
-    VertexOfTargetDiamondInsideEdgeC = Line.get_cross_point(EageOfTargetDiamondParallelsToEdgeB, EdgeC)
+    EageOfTargetRhombusParallelsToEdgeC = Line.get_line_parallel_to(EdgeC, VertexOfTargetRhombusInsideEdgeA)
+    EageOfTargetRhombusParallelsToEdgeB = Line.get_line_parallel_to(EdgeB, VertexOfTargetRhombusInsideEdgeA)
+    VertexOfTargetRhombusInsideEdgeB = Line.get_cross_point(EageOfTargetRhombusParallelsToEdgeC, EdgeB)
+    VertexOfTargetRhombusInsideEdgeC = Line.get_cross_point(EageOfTargetRhombusParallelsToEdgeB, EdgeC)
 
-    resolution_vertex_in_edge_a = query.query_point_by_symmetry(VertexOfTargetDiamondInsideEdgeA)
-    resolution_vertex_in_edge_b = query.query_point_by_symmetry(VertexOfTargetDiamondInsideEdgeB)
-    resolution_vertex_in_edge_c = query.query_point_by_symmetry(VertexOfTargetDiamondInsideEdgeC)
+    resolution_vertex_in_edge_a = query.query_point_by_symmetry(VertexOfTargetRhombusInsideEdgeA)
+    resolution_vertex_in_edge_b = query.query_point_by_symmetry(VertexOfTargetRhombusInsideEdgeB)
+    resolution_vertex_in_edge_c = query.query_point_by_symmetry(VertexOfTargetRhombusInsideEdgeC)
 
     TriangleEdges = {(EdgeA.a, EdgeA.b, EdgeA.c), (EdgeB.a, EdgeB.b, EdgeB.c), (EdgeC.a, EdgeC.b, EdgeC.c)}
     resolution_product = itertools.product(resolution_vertex_in_edge_a,
@@ -52,7 +52,7 @@ def question_22_17(query):
 
     init_figure, grid_size = common.INIT_FIGURE(), common.GRID_SIZE()
     init_figure.extend(TriangleEdges)
-    targets = (VertexOfTargetDiamondInsideEdgeA, VertexOfTargetDiamondInsideEdgeB, VertexOfTargetDiamondInsideEdgeC)
+    targets = (VertexOfTargetRhombusInsideEdgeA, VertexOfTargetRhombusInsideEdgeB, VertexOfTargetRhombusInsideEdgeC)
     for r in resolution_for_all:
         draw_resolution(r, targets, init_figure, grid_size)
 
