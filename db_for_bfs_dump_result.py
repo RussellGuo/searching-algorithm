@@ -140,6 +140,7 @@ class DBQuery:
         try:
             self.query_point(Point(Fraction(0), Fraction(0)))
         except Exception:
+            self.connect.close()
             raise FileNotFoundError
 
     def query_point(self, point: Point):
