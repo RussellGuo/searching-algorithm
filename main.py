@@ -135,12 +135,33 @@ def question_14_9(query):
         draw_resolution(r, [point_target], init_figure, grid_size)
 
 
+def question_14_8(query):
+    # get Point B
+    line1 = Line.get_line_contains_points(Point(-3, -1), Point(3, -3))
+    line2 = Line(1, 0, -2)
+    B = line1.get_cross_point(line2)
+    # get Point A
+    line1 = Line.get_line_contains_points(Point(-3, 1), Point(2, 2))
+    line2 = Line(1, 0, 1)
+    A = line1.get_cross_point(line2)
+    del line1, line2
+
+    point_target = A.middle(B)
+
+    # query and show it(them)
+    solution = query.query_point_by_symmetry(point_target)
+    init_figure, grid_size = common.INIT_FIGURE(), common.GRID_SIZE()
+    for r in solution:
+        draw_resolution(r, [point_target], init_figure, grid_size)
+
+
 def main():
     db_query = get_query_obj()
     # question_22_17(db_query)
     # question_27_14(db_query)
     # question_27_15(db_query)
-    question_14_9(db_query)
+    #question_14_9(db_query)
+    question_14_8(db_query)
 
 
 if __name__ == '__main__':
