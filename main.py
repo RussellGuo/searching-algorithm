@@ -165,9 +165,11 @@ def question_16_15(query):
     solution = query.query_line(line, A)
     init_figure, grid_size = common.INIT_FIGURE(), common.GRID_SIZE()
     init_figure.extend(((line1.a, line1.b, line1.c), (line2.a, line2.b, line2.c)))
+
+    points = set([s[0] for s in solution])
     for r in solution[:4]:
         p, fig = r
-        draw_resolution(fig, [p], init_figure, grid_size)
+        draw_resolution(fig, points, init_figure, grid_size)
 
 
 def main():
