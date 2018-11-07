@@ -4,7 +4,7 @@ import sys
 from fractions import Fraction
 
 import common
-from geo import Point
+from geo import Point, Line
 
 
 class DBCreator:
@@ -135,12 +135,15 @@ class DBCreator:
 
 class DBQuery:
     def __init__(self, db_file_name='new_graph.db'):
-        self.db_file_name = db_file_name
-        self.connect = sqlite3.connect(self.db_file_name)
         try:
+            self.db_file_name = db_file_name
+            self.connect = sqlite3.connect("file:" + self.db_file_name + "?mode=ro", uri=True)
             self.query_point(Point(Fraction(0), Fraction(0)))
         except Exception:
-            self.connect.close()
+            try:
+                self.connect.close()
+            except:
+                pass
             raise FileNotFoundError
 
     def query_point(self, point: Point):
@@ -161,6 +164,51 @@ class DBQuery:
             result.append(tuple(lines))
             cursor.close()
 
+        return result
+
+    def query_line(self, line: Line, except_point: Point):
+        a, b, c = line.a, line.b, line.c
+        except_point_vector = (
+            except_point.x.numerator, except_point.x.denominator, except_point.y.numerator, except_point.y.denominator)
+        except_points_vector = common.points_symmetry(except_point_vector)
+        sql_smt = "select distinct x_numerator, x_denominator, y_numerator, y_denominator " \
+                  "from point, point_figure, figure where (" \
+                  "+(:A) * x_numerator * y_denominator + +(:B) * y_numerator * x_denominator = (:C) * x_denominator * y_denominator or " \
+                  "+(:A) * x_numerator * y_denominator + -(:B) * y_numerator * x_denominator = (:C) * x_denominator * y_denominator or " \
+                  "-(:A) * x_numerator * y_denominator + +(:B) * y_numerator * x_denominator = (:C) * x_denominator * y_denominator or " \
+                  "-(:A) * x_numerator * y_denominator + -(:B) * y_numerator * x_denominator = (:C) * x_denominator * y_denominator or " \
+                  "+(:B) * x_numerator * y_denominator + +(:A) * y_numerator * x_denominator = (:C) * x_denominator * y_denominator or " \
+                  "+(:B) * x_numerator * y_denominator + -(:A) * y_numerator * x_denominator = (:C) * x_denominator * y_denominator or " \
+                  "-(:B) * x_numerator * y_denominator + +(:A) * y_numerator * x_denominator = (:C) * x_denominator * y_denominator or " \
+                  "-(:B) * x_numerator * y_denominator + -(:A) * y_numerator * x_denominator = (:C) * x_denominator * y_denominator or " \
+                  " 0) and point_figure.point_id = point.id and point_figure.figure_id = figure.id and level = (:level)"
+
+        rows = set()
+        for level in range(4):
+            cond = {"A": a, "B": b, "C": c, "level": level}
+            cursor = self.connect.cursor()
+            cursor.execute(sql_smt, cond)
+            rows = set(cursor.fetchall()) - except_points_vector
+            cursor.close()
+            if rows:
+                break
+
+        matched_points = set()
+        for p in rows:
+            for ps in common.points_symmetry(p):
+                x_numerator, x_denominator, y_numerator, y_denominator = ps
+                if a * x_numerator * y_denominator + b * y_numerator * x_denominator == c * x_denominator * y_denominator:
+                    matched_points.add(ps)
+
+        result = []
+        for p in matched_points:
+            point = Point(Fraction(p[0], p[1]), Fraction(p[2], p[3]))
+            ff = self.query_point_by_symmetry(point)
+            for f in ff:
+                result.append((point, f))
+
+        result = list(set(result))
+        result.sort()
         return result
 
     def query_point_by_symmetry(self, point):

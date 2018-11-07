@@ -105,6 +105,11 @@ def iter_of_figure_and_point_symmetry(point, fig_list):
             yield (p, tuple(fig0))
 
 
+def points_symmetry(point):
+    points = [apply_mat_on_point(point, mat) for mat in get_symmetry_matrix_table()]
+    return frozenset(points)
+
+
 def inv_for_symmetry_mat(mat):
     det = mat[0][0] * mat[1][1] - mat[0][1] * mat[1][0]
     assert abs(det) == 1
