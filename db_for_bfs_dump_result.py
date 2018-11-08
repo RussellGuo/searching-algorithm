@@ -166,11 +166,14 @@ class DBQuery:
 
         return result
 
-    def query_line(self, line: Line, except_point: Point):
+    def query_line_by_symmetry(self, line: Line, except_points):
         a, b, c = line.a, line.b, line.c
-        except_point_vector = (
-            except_point.x.numerator, except_point.x.denominator, except_point.y.numerator, except_point.y.denominator)
-        except_points_vector = common.points_symmetry(except_point_vector)
+        except_points_vector = []
+        for point in except_points:
+            except_point_vector = (point.x.numerator, point.x.denominator, point.y.numerator, point.y.denominator)
+            except_points_vector.extend(common.points_symmetry(except_point_vector))
+        except_points_vector = frozenset(except_points_vector)
+
         sql_smt = "select distinct x_numerator, x_denominator, y_numerator, y_denominator " \
                   "from point, point_figure, figure where (" \
                   "+(:A) * x_numerator * y_denominator + +(:B) * y_numerator * x_denominator = (:C) * x_denominator * y_denominator or " \

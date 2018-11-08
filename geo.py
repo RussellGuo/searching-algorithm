@@ -151,6 +151,14 @@ class Line:
 
         return result
 
+    @staticmethod
+    def get_line_by_point_slope(point: Point, slope: Fraction):
+        a = - slope.numerator
+        b = slope.denominator
+        c = a * point.x + b * point.y
+        result = Line(Fraction(a), b, c)
+        return result
+
     def __repr__(self):
         if isinstance(self.obj_tuple, str):
             return self.obj_tuple
