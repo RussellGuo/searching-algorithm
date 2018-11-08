@@ -9,7 +9,7 @@ import common
 from db_for_bfs_dump_result import DBQuery, build_db
 from draw_searching_graph import draw_resolution
 from geo import Point, Line
-from tan_arith import tan_of_complementary, tan_of_add, tan_of_neg, tan_of_double
+from tan_arith import tan_of_complementary, tan_of_add, tan_of_neg, tan_of_double, tan_of_sub
 
 
 def get_query_obj() -> DBQuery:
@@ -186,11 +186,35 @@ def question_24_6(query):
 
     line = Line.get_line_by_point_slope(A, slope)
     # query and show it(them)
-    solution = query.query_line_by_symmetry(line, (A,))
     init_figure, grid_size = common.INIT_FIGURE(), common.GRID_SIZE()
     init_figure.extend(((line1.a, line1.b, line1.c), (line2.a, line2.b, line2.c)))
+    solution = query.query_line_by_symmetry(line, (A,), init_figure)
 
     points = set([s[0] for s in solution])
+    for r in solution[:4]:
+        p, fig = r
+        draw_resolution(fig, points, init_figure, grid_size)
+
+
+def question_24_7(query):
+    A = Point(2, -1)
+    B = Point(-2, 0)
+    line1 = Line.get_line_contains_points(A, B)
+    line2 = Line.get_line_by_point_slope(A, Fraction(-1))
+
+    tan_alpha = Fraction(1, 4)
+    tan_beta = tan_of_sub(Fraction(1), tan_alpha)
+    tan_theta = tan_of_sub(tan_beta, tan_alpha)
+    slope = tan_theta
+
+    line = Line.get_line_by_point_slope(A, slope)
+    # query and show it(them)
+    init_figure, grid_size = common.INIT_FIGURE(), common.GRID_SIZE()
+    init_figure.extend(((line1.a, line1.b, line1.c), (line2.a, line2.b, line2.c)))
+    solution = query.query_line_by_symmetry(line, (A,), init_figure)
+
+    points = set([s[0] for s in solution])
+
     for r in solution[:4]:
         p, fig = r
         draw_resolution(fig, points, init_figure, grid_size)
@@ -204,7 +228,8 @@ def main():
     # question_14_9(db_query)
     # question_14_8(db_query)
     # question_16_15(db_query)
-    question_24_6(db_query)
+    # question_24_6(db_query)
+    question_24_7(db_query)
 
 
 if __name__ == '__main__':

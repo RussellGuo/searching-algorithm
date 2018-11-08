@@ -166,14 +166,23 @@ class DBQuery:
 
         return result
 
-    def query_line_by_symmetry(self, line: Line, except_points):
+    def query_line_by_symmetry(self, line: Line, except_points, init_fig=None):
+
+        # init_fig: will be subtracted from each result item
+        if init_fig is None:
+            init_fig = set()
+        init_fig = set(init_fig)
+
         a, b, c = line.a, line.b, line.c
+
+        # those points are not the result
         except_points_vector = []
         for point in except_points:
             except_point_vector = (point.x.numerator, point.x.denominator, point.y.numerator, point.y.denominator)
             except_points_vector.extend(common.points_symmetry(except_point_vector))
         except_points_vector = frozenset(except_points_vector)
 
+        # find point which in the line
         sql_smt = "select distinct x_numerator, x_denominator, y_numerator, y_denominator " \
                   "from point, point_figure, figure where (" \
                   "+(:A) * x_numerator * y_denominator + +(:B) * y_numerator * x_denominator = (:C) * x_denominator * y_denominator or " \
@@ -187,6 +196,7 @@ class DBQuery:
                   " 0) and point_figure.point_id = point.id and point_figure.figure_id = figure.id and level = (:level)"
 
         rows = set()
+        # to find  the lowest result
         for level in range(4):
             cond = {"A": a, "B": b, "C": c, "level": level}
             cursor = self.connect.cursor()
@@ -196,6 +206,7 @@ class DBQuery:
             if rows:
                 break
 
+        # concern the symmetry, find real points
         matched_points = set()
         for p in rows:
             for ps in common.points_symmetry(p):
@@ -203,12 +214,21 @@ class DBQuery:
                 if a * x_numerator * y_denominator + b * y_numerator * x_denominator == c * x_denominator * y_denominator:
                     matched_points.add(ps)
 
+        # find the figures
         result = []
         for p in matched_points:
             point = Point(Fraction(p[0], p[1]), Fraction(p[2], p[3]))
             ff = self.query_point_by_symmetry(point)
             for f in ff:
-                result.append((point, f))
+                f0 = tuple(set(f) - init_fig)
+                result.append((point, f0))
+
+        # only those lowest result be kept
+        def len_for_result(r):
+            return len(r[1])
+
+        shortest = min(map(len_for_result, result))
+        result = [r for r in result if len_for_result(r) == shortest]
 
         result = list(set(result))
         result.sort()
