@@ -190,6 +190,23 @@ def question_16_12(query):
         draw_resolution(fig, points, init_figure, grid_size)
 
 
+def question_16_13(query):
+    line1 = Line.get_line_contains_points(Point(-3, 2), Point(-1, 3))
+    line2 = Line.get_line_contains_points(Point(2, 3), Point(3, 1))
+    line = Line.get_bisectors_for_2lines(line1, line2)[0]
+    A = line1.get_cross_point(line2)
+
+    # query and show it(them)
+    init_figure, grid_size = common.INIT_FIGURE(), common.GRID_SIZE()
+    init_figure.extend(((line1.a, line1.b, line1.c), (line2.a, line2.b, line2.c)))
+    solution = query.query_line_by_symmetry(line, (A,), init_figure)
+
+    points = set([s[0] for s in solution])
+    for r in solution[:4]:
+        p, fig = r
+        draw_resolution(fig, points, init_figure, grid_size)
+
+
 def question_16_15(query):
     line1 = Line.get_line_contains_points(Point(-2, 0), Point(0, 1))
     line2 = Line.get_line_contains_points(Point(0, -1), Point(1, 1))
@@ -265,7 +282,8 @@ def main():
     # question_16_12(db_query)
     # question_24_6(db_query)
     # question_24_7(db_query)
-    question_16_9(db_query)
+    # question_16_9(db_query)
+    question_16_13(db_query)
 
 
 if __name__ == '__main__':
