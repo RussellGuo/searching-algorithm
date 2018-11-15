@@ -40,19 +40,20 @@ def question_22_17(query):
     VertexOfTargetRhombusInsideEdgeB = Line.get_cross_point(EageOfTargetRhombusParallelsToEdgeC, EdgeB)
     VertexOfTargetRhombusInsideEdgeC = Line.get_cross_point(EageOfTargetRhombusParallelsToEdgeB, EdgeC)
 
-    resolution_vertex_in_edge_a = query.query_point_by_symmetry(VertexOfTargetRhombusInsideEdgeA)
-    resolution_vertex_in_edge_b = query.query_point_by_symmetry(VertexOfTargetRhombusInsideEdgeB)
-    resolution_vertex_in_edge_c = query.query_point_by_symmetry(VertexOfTargetRhombusInsideEdgeC)
-
     TriangleEdges = {(EdgeA.a, EdgeA.b, EdgeA.c), (EdgeB.a, EdgeB.b, EdgeB.c), (EdgeC.a, EdgeC.b, EdgeC.c)}
+    init_figure, grid_size = common.INIT_FIGURE(), common.GRID_SIZE()
+    init_figure.extend(TriangleEdges)
+
+    resolution_vertex_in_edge_a = query.query_point_by_symmetry(VertexOfTargetRhombusInsideEdgeA, init_figure)
+    resolution_vertex_in_edge_b = query.query_point_by_symmetry(VertexOfTargetRhombusInsideEdgeB, init_figure)
+    resolution_vertex_in_edge_c = query.query_point_by_symmetry(VertexOfTargetRhombusInsideEdgeC, init_figure)
+
     resolution_product = itertools.product(resolution_vertex_in_edge_a,
                                            resolution_vertex_in_edge_b,
                                            resolution_vertex_in_edge_c)
     solution_for_all = [frozenset((set(r[0]) | set(r[1]) | set(r[2])) - TriangleEdges) for r in resolution_product]
     solution_for_all.sort()
 
-    init_figure, grid_size = common.INIT_FIGURE(), common.GRID_SIZE()
-    init_figure.extend(TriangleEdges)
     targets = (VertexOfTargetRhombusInsideEdgeA, VertexOfTargetRhombusInsideEdgeB, VertexOfTargetRhombusInsideEdgeC)
     for r in solution_for_all:
         draw_resolution(r, targets, init_figure, grid_size)
@@ -139,20 +140,23 @@ def question_14_9(query):
 def question_14_8(query):
     # get Point B
     line1 = Line.get_line_contains_points(Point(-3, -1), Point(3, -3))
-    line2 = Line(1, 0, -2)
-    B = line1.get_cross_point(line2)
+    line_tmp = Line(1, 0, -2)
+    B = line1.get_cross_point(line_tmp)
+
     # get Point A
-    line1 = Line.get_line_contains_points(Point(-3, 1), Point(2, 2))
-    line2 = Line(1, 0, 1)
-    A = line1.get_cross_point(line2)
-    del line1, line2
+    line2 = Line.get_line_contains_points(Point(-3, 1), Point(2, 2))
+    line_tmp = Line(1, 0, 1)
+    A = line2.get_cross_point(line_tmp)
+    line = Line.get_line_contains_points(A, B)
 
     point_target = A.middle(B)
 
     # query and show it(them)
-    solution = query.query_point_by_symmetry(point_target)
     init_figure, grid_size = common.INIT_FIGURE(), common.GRID_SIZE()
-    for r in solution:
+    for ll in (line, line1, line2):
+        init_figure.append((ll.a, ll.b, ll.c))
+    solution = query.query_point_by_symmetry(point_target, init_figure)
+    for r in solution[:4]:
         draw_resolution(r, [point_target], init_figure, grid_size)
 
 
@@ -283,7 +287,8 @@ def main():
     # question_24_6(db_query)
     # question_24_7(db_query)
     # question_16_9(db_query)
-    question_16_13(db_query)
+    # question_16_13(db_query)
+    question_14_8(db_query)
 
 
 if __name__ == '__main__':

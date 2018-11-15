@@ -218,7 +218,7 @@ class DBQuery:
         result = []
         for p in matched_points:
             point = Point(Fraction(p[0], p[1]), Fraction(p[2], p[3]))
-            ff = self.query_point_by_symmetry(point)
+            ff = self.query_point_by_symmetry(point, init_fig)
             for f in ff:
                 f0 = tuple(set(f) - init_fig)
                 result.append((point, f0))
@@ -234,7 +234,12 @@ class DBQuery:
         result.sort()
         return result
 
-    def query_point_by_symmetry(self, point):
+    def query_point_by_symmetry(self, point, init_fig=None):
+        # init_fig: will be subtracted from each result item
+        if init_fig is None:
+            init_fig = set()
+        init_fig = set(init_fig)
+
         point_vector = (point.x.numerator, point.x.denominator, point.y.numerator, point.y.denominator)
 
         mat_table = common.get_symmetry_matrix_table()
@@ -245,7 +250,7 @@ class DBQuery:
             fig_list = self.query_point(p0)
             for fig in fig_list:
                 fig0 = common.apply_mat_on_figure(fig, common.inv_for_symmetry_mat(mat))
-                result.append(tuple(fig0))
+                result.append(tuple(set(fig0) - init_fig))
         result = list(set(result))
         result.sort()
         return result
