@@ -51,7 +51,7 @@ def question_22_17(query):
     resolution_product = itertools.product(resolution_vertex_in_edge_a,
                                            resolution_vertex_in_edge_b,
                                            resolution_vertex_in_edge_c)
-    solution_for_all = [frozenset((set(r[0]) | set(r[1]) | set(r[2])) - TriangleEdges) for r in resolution_product]
+    solution_for_all = [frozenset((set(r[0]) | set(r[1]) | set(r[2]))) for r in resolution_product]
     solution_for_all.sort()
 
     targets = (VertexOfTargetRhombusInsideEdgeA, VertexOfTargetRhombusInsideEdgeB, VertexOfTargetRhombusInsideEdgeC)

@@ -251,6 +251,10 @@ class DBQuery:
             for fig in fig_list:
                 fig0 = common.apply_mat_on_figure(fig, common.inv_for_symmetry_mat(mat))
                 result.append(tuple(set(fig0) - init_fig))
+
+        shortest = min(map(len, result))
+        result = [r for r in result if len(r) == shortest]
+
         result = list(set(result))
         result.sort()
         return result
