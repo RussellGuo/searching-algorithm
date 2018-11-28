@@ -67,6 +67,7 @@ def bfs_dump_for_pythagorea(init_param_lines, coord_grid=3, max_depth=3):
     line_tab = {}
     fig_tab = set()
     point_tab = {}
+    test_loop_count = 0
 
     point_checker: Callable[[Fraction, Fraction], bool] = common.POINT_CHECKER(coord_grid)
 
@@ -78,13 +79,15 @@ def bfs_dump_for_pythagorea(init_param_lines, coord_grid=3, max_depth=3):
         return ref
 
     def list_of_fig_which_has_point(point):
+        nonlocal test_loop_count
+        test_loop_count += 1
+        if test_loop_count % 10000 == 0:
+            print(test_loop_count, time.time())
         point_vector = (point.x.numerator, point.x.denominator, point.y.numerator, point.y.denominator)
         try:
             fig_list = point_tab[point_vector]
         except KeyError:
             fig_list = point_tab[point_vector] = []
-            if len(point_tab) % 10000 == 0:
-                print(len(point_tab), time.time())
 
         return fig_list
 
