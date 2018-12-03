@@ -5,7 +5,9 @@ CONFIG -= qt
 
 SOURCES += \
         main.cpp \
-    geo.cpp
+    geo.cpp \
+    figure.cpp
 
 HEADERS += \
-    geo.h
+    geo.h \
+    figure.h
