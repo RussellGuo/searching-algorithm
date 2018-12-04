@@ -12,5 +12,9 @@ int main()
     geo::Rational r(-12, 4);
     geo::Figure f;
     cout << "Hello World " << sizeof f << endl;
+    cout << "Hello World " << sizeof f.getLines()[0] << endl;
+    geo::testGeoLine();
+    geo::testFigure();
+
     return 0;
 }
