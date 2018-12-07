@@ -9,7 +9,7 @@ class Figure
 {
 public:
     Figure():lines() {}
-    Figure(const Figure &parent, Line &ll):lines(parent.lines) {
+    Figure(const Figure &parent, const Line &ll):lines(parent.lines) {
         lines.push_back(ll);
         std::sort(lines.begin(), lines.end());
         lines.shrink_to_fit();
@@ -18,8 +18,12 @@ public:
     const std::vector<Line> &getLines() const {
         return lines;
     }
+    size_t lineCount() const {
+        auto ret = lines.size();
+        return ret;
+    }
 
-    Figure(const Figure &) = delete;
+    Figure(const Figure &fig):lines(fig.lines) {}
     Figure& operator =(const Figure &) = delete;
 
     typedef const Figure *FigurePtr;
@@ -59,6 +63,7 @@ private:
 typedef std::unordered_set<Figure::FigurePtr, Figure::pointHash, Figure::pointEqual> FigSet;
 
 void testFigure();
+
 
 }
 #endif // FIGURE_H

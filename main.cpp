@@ -6,6 +6,7 @@ using namespace std;
 #include <unordered_set>
 #include "geo.h"
 #include "figure.h"
+#include "bfs.h"
 
 int main()
 {
@@ -15,6 +16,8 @@ int main()
     cout << "Hello World " << sizeof f.getLines()[0] << endl;
     geo::testGeoLine();
     geo::testFigure();
+
+    bfs bfs;
 
     return 0;
 }

@@ -46,21 +46,18 @@ inline Int det2(Int a, Int b, Int c, Int d)
 
 
 class Point {
-private:
-    // define a point by x and y
+public:
+    explicit Point():x(std::numeric_limits<Int>::min()), y(std::numeric_limits<Int>::min()) {}
     Point(const Rational &_x, const Rational &_y):
         x(_x), y(_y)
     {
+        if (!isValid(x, y)) {
+            auto min = std::numeric_limits<Int>::min();
+            x = y = min;
+        }
     }
-public:
-    static Point getInvalidPoint() {
-        auto min = std::numeric_limits<Int>::min();
-        return Point(min, min);
-    }
-
     Point(const Point &) = default;
-    Point& operator =(const Point &) = delete;
-    const Rational x, y;
+    Point& operator =(const Point &) = default;
 
     // a auxilliary class for unordered set/map
     struct hash {
@@ -93,14 +90,19 @@ public:
         return !invalid;
 
     }
-
-    static Point getPoint(const Rational &x, const Rational &y) {
-        if (isValid(x, y)) {
-            return Point(x, y);
-        } else {
-            return getInvalidPoint();
-        }
+    Rational getY() const
+    {
+        return y;
     }
+
+    Rational getX() const
+    {
+        return x;
+    }
+
+private:
+    // define a point by x and y
+    Rational x, y;
 
 };
 
@@ -116,9 +118,9 @@ public:
 
     // define a line by 2 point on it.
     Line(const Point &p1, const Point &p2) {
-        auto _a = p1.y - p2.y;
-        auto _b = p2.x - p1.x;
-        auto _c = p2.x * p1.y - p1.x * p2.y;
+        auto _a = p1.getY() - p2.getY();
+        auto _b = p2.getX() - p1.getX();
+        auto _c = p2.getX() * p1.getY() - p1.getX() * p2.getY();
         construct(_a, _b, _c);
     }
 
@@ -170,13 +172,13 @@ public:
     {
         auto det = det2(Line1.a, Line1.b, Line2.a, Line2.b);
         if (det == 0) {
-            return Point::getInvalidPoint();
+            return Point();
         }
         auto dx = det2(Line1.c, Line1.b, Line2.c, Line2.b);
         auto dy = det2(Line1.a, Line1.c, Line2.a, Line2.c);
         auto x = Rational(dx, det);
         auto y = Rational(dy, det);
-        auto ret = Point::getPoint(x, y);
+        auto ret = Point(x, y);
         return ret;
     }
 
