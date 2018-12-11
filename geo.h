@@ -28,7 +28,7 @@ inline size_t hashValue(Int v)
 
 
 typedef boost::rational<Int> Rational;
-inline size_t hashValue(Rational v)
+inline size_t hashValue(const Rational &v)
 {
     size_t ret;
     ret = hashValue(v.numerator()) | (hashValue(v.denominator()) << 16);
@@ -36,7 +36,8 @@ inline size_t hashValue(Rational v)
 }
 
 
-const Rational MAX_GRID_COORD = 3;
+constexpr Int MAX_GRID_COORD = 3;
+constexpr Int INVALID_COORD = -MAX_GRID_COORD - 1;
 
 inline Int det2(Int a, Int b, Int c, Int d)
 {
@@ -47,13 +48,12 @@ inline Int det2(Int a, Int b, Int c, Int d)
 
 class Point {
 public:
-    explicit Point():x(std::numeric_limits<Int>::min()), y(std::numeric_limits<Int>::min()) {}
+    explicit Point():x(INVALID_COORD), y(INVALID_COORD) {}
     Point(const Rational &_x, const Rational &_y):
         x(_x), y(_y)
     {
         if (!isValid(x, y)) {
-            auto min = std::numeric_limits<Int>::min();
-            x = y = min;
+            x = y = INVALID_COORD;
         }
     }
     Point(const Point &) = default;
@@ -63,9 +63,7 @@ public:
     struct hash {
         size_t operator()(const Point& p) const
         {
-            std::size_t hx = hashValue(p.x);
-            std::size_t hy = hashValue(p.y);
-            return hx | (hy << 8);
+            return size_t(p.x.numerator()) | size_t((p.x.denominator()) << 8) | size_t((p.y.numerator()) << 16) | size_t((p.y.denominator()) << 24);
         }
     };
 
@@ -85,10 +83,11 @@ public:
         return isValid(x, y);
     }
 
+    static bool isValid(const Rational &v) {
+        return abs(v.numerator()) <= MAX_GRID_COORD * v.denominator();
+    }
     static bool isValid(const Rational &x, const Rational &y) {
-        auto invalid = x < -MAX_GRID_COORD || x > MAX_GRID_COORD || y < -MAX_GRID_COORD || y > MAX_GRID_COORD;
-        return !invalid;
-
+        return isValid(x) && isValid(y);
     }
     Rational getY() const
     {
@@ -149,6 +148,9 @@ public:
     bool operator == (const Line &other) const {
         return a == other.a && b == other.b && c == other.c;
     }
+    bool operator != (const Line &other) const {
+        return !(*this == other);
+    }
 
     // dictionary order, for sorting a set of lines. then set can be stored as a sorted vector,
     // the equality of two set is the one of those vectors.
@@ -168,18 +170,18 @@ public:
     }
 
     // get the point by 2 lines' intersection
-    static Point getIntersectionPoint(const Line &Line1, const Line &Line2)
+    static bool getIntersectionPoint(const Line &Line1, const Line &Line2, Point &point)
     {
         auto det = det2(Line1.a, Line1.b, Line2.a, Line2.b);
         if (det == 0) {
-            return Point();
+            return false;
         }
         auto dx = det2(Line1.c, Line1.b, Line2.c, Line2.b);
         auto dy = det2(Line1.a, Line1.c, Line2.a, Line2.c);
         auto x = Rational(dx, det);
         auto y = Rational(dy, det);
-        auto ret = Point(x, y);
-        return ret;
+        point = Point(x, y);
+        return point.isValid();
     }
 
 private:

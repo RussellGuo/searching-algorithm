@@ -55,6 +55,19 @@ public:
             return ret;
         }
     };
+    struct pointLess {
+        bool operator() (const FigurePtr &fig_left, const FigurePtr &fig_right) const {
+            if (fig_left->lineCount() != fig_right->lineCount()) {
+                return fig_left->lineCount() < fig_right->lineCount();
+            }
+            for (unsigned i = 0; i < fig_left->lineCount(); i++) {
+                if (fig_left->getLines()[i] != fig_right->getLines()[i]) {
+                    return fig_left->getLines()[i] < fig_right->getLines()[i];
+                }
+            }
+            return false;
+        }
+    };
 
 private:
     std::vector<Line> lines;
