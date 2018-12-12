@@ -73,7 +73,7 @@ private:
     std::vector<Line> lines;
 };
 
-typedef std::unordered_set<Figure::FigurePtr, Figure::pointHash, Figure::pointEqual> FigSet;
+typedef std::set<Figure::FigurePtr, Figure::pointLess> FigSet;
 
 void testFigure();
 

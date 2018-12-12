@@ -10,6 +10,8 @@
 #include <tuple>
 #include <unordered_map>
 #include <unordered_set>
+#include <set>
+#include <map>
 
 namespace geo {
 
@@ -105,7 +107,7 @@ private:
 
 };
 
-typedef std::unordered_set<Point, Point::hash> PointSet;
+typedef std::set<Point> PointSet;
 
 
 class Line {
@@ -212,7 +214,7 @@ private:
     Int a, b, c;
 };
 
-typedef std::unordered_set<Line, Line::hash> LineSet;
+typedef std::set<Line> LineSet;
 
 void testGeoLine();
 

@@ -1,14 +1,20 @@
+#include <set>
+#include <map>
 #include <unordered_map>
-#include <boost/range/join.hpp>
-#include "bfs.h"
 
+#include <boost/range/join.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+
+#include "bfs.h"
 #include "figure.h"
 using namespace geo;
 
 bfs::bfs(const unsigned max_level)
 {
     typedef std::vector<Figure::FigurePtr> FigList;
-    typedef std::unordered_map<Point, FigList, Point::hash> MapForPointToFig;
+    typedef std::map<Point, FigList> MapForPointToFig;
+
+    const auto begin_time = boost::posix_time::microsec_clock::local_time();
 
     LineSet init_lines;
     for (auto i = -geo::MAX_GRID_COORD; i <= geo::MAX_GRID_COORD; i++) {
@@ -43,10 +49,10 @@ bfs::bfs(const unsigned max_level)
     }
 
     Figure *init_fig = new Figure();
-    FigSet fig_tab(10000 * 10000U);
+    FigSet fig_tab;
     fig_tab.insert(init_fig);
 
-    MapForPointToFig point_fig_map(700 * 10000U);
+    MapForPointToFig point_fig_map;
     for (const auto &p: init_points) {
         auto& fig_list = point_fig_map[p];
         fig_list.push_back(init_fig);
@@ -63,14 +69,15 @@ bfs::bfs(const unsigned max_level)
         }
         printf("level: %zd, total figures %zd\n", level, cur_level_fig_tab.size());
         if (level == max_level) {
-            fig_tab.rehash(0);
         }
         for (const auto cur_fig:cur_level_fig_tab) {
             if (count % 10000 == 0) {
+                const auto microsec = boost::posix_time::microsec_clock::local_time() - begin_time;
                 printf("log:%10zd, ", count);
-                printf("%10zd, %10zd\n",
+                printf("%10zd, %10zd, %10ld\n",
                        cur_level_fig_tab.size(),
-                       point_fig_map.size());
+                       point_fig_map.size(), microsec.total_microseconds());
+                fflush(stdout);
             }
             count++;
             // find all the point and record them
