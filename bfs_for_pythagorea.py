@@ -66,7 +66,8 @@ def get_fig_level(fig):
 def bfs_dump_for_pythagorea(init_param_lines, coord_grid=3, max_depth=3):
     line_tab = {}
     fig_tab = set()
-    point_tab = {}
+    low_level_point_set = set()
+    point_tab = []
     test_loop_count = 0
 
     point_checker: Callable[[Fraction, Fraction], bool] = common.POINT_CHECKER(coord_grid)
@@ -78,27 +79,10 @@ def bfs_dump_for_pythagorea(init_param_lines, coord_grid=3, max_depth=3):
             ref = line_tab[abc] = abc
         return ref
 
-    def list_of_fig_which_has_point(point):
-        point_vector = (point.x.numerator, point.x.denominator, point.y.numerator, point.y.denominator)
-        try:
-            fig_list = point_tab[point_vector]
-        except KeyError:
-            fig_list = point_tab[point_vector] = []
-
-        return fig_list
-
-    def check_if_symmetry_point_exists_in_low_level(point):
-        points = [point]
-        for p in points:
-            try:
-                _fig_lst = point_tab[p]
-                if _fig_lst:
-                    ll = len(_fig_lst[0])
-                    if ll < level:
-                        return True
-            except KeyError:
-                continue
-        return False
+    def append(point, fig):
+        #point_vector = (point.x.numerator, point.x.denominator, point.y.numerator, point.y.denominator)
+        #point_tab.append((point_vector, fig))
+        pass
 
     init_lines = set([Line(i[0], i[1], i[2]) for i in init_param_lines])
     init_points = get_points_in_one_lines_set(init_lines)
@@ -106,8 +90,7 @@ def bfs_dump_for_pythagorea(init_param_lines, coord_grid=3, max_depth=3):
     init_fig = ()
     fig_tab.add(init_fig)
     for p in init_points:
-        fig_lst = list_of_fig_which_has_point(p)
-        fig_lst.append(init_fig)
+        append(p, init_fig)
 
     # create first_level_lines, it's for speed up to generate every new potential lines for next level
     # for all_lines = init_lines + current_lines,
@@ -123,6 +106,7 @@ def bfs_dump_for_pythagorea(init_param_lines, coord_grid=3, max_depth=3):
     for level in range(max_depth + 1):
         current_figure_set = [fig for fig in fig_tab if get_fig_level(fig) == level]
         print("level:", level, len(current_figure_set), time.time())
+        cur_level_point_set = set()
         for cur_fig in current_figure_set:
             test_loop_count += 1
             if test_loop_count % 10000 == 0:
@@ -139,15 +123,15 @@ def bfs_dump_for_pythagorea(init_param_lines, coord_grid=3, max_depth=3):
                     new_points.add(p)
 
                     # added into point->figure table if it's worth
-                    p_exists_in_lower = check_if_symmetry_point_exists_in_low_level(
-                        (p.x.numerator, p.x.denominator, p.y.numerator, p.y.denominator))
+                    p_exists_in_lower = (p.x.numerator, p.x.denominator, p.y.numerator,
+                                         p.y.denominator) in low_level_point_set
                     if not p_exists_in_lower:
-                        p_fig_list = list_of_fig_which_has_point(p)
-                        p_fig_list.append(cur_fig)
+                        append(p, cur_fig)
 
             # produce next level
             if level == max_depth:
                 continue  # no need to do for the last level
+            cur_level_point_set |= new_points
             new_lines = set([Line.get_line_contains_points(p0, p1) for p0, p1 in
                              itertools.product(new_points, new_points | init_points)]) - {None}
             for line in new_lines | first_level_lines:
@@ -156,21 +140,15 @@ def bfs_dump_for_pythagorea(init_param_lines, coord_grid=3, max_depth=3):
                     new_fig = tuple(sorted(cur_fig + (line_param,)))
                     if new_fig not in fig_tab:
                         fig_tab.add(new_fig)
+        low_level_point_set |= cur_level_point_set
 
     print("log:", len(point_tab), len(fig_tab), len(line_tab), time.time())
-
-    fig_vec = list(fig_tab)
-    fig_vec.sort(key=lambda f: (len(f), f))
-    for fig in fig_vec:
-        for line in fig:
-            print("%d %d %d  " % (line[0], line[1], line[2]), end="")
-        print("")
 
     return point_tab
 
 
 def get_pythagorea_graph():
-    point_tab = bfs_dump_for_pythagorea(common.INIT_FIGURE(), common.GRID_SIZE(), 2)
+    point_tab = bfs_dump_for_pythagorea(common.INIT_FIGURE(), common.GRID_SIZE(), 3)
     return point_tab
 
 
