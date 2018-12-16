@@ -122,9 +122,9 @@ bfs::bfs(const unsigned max_level)
                     }
                     auto inserted = cur_fig_points_other_than_init_fig.insert(point).second;
                     if (inserted) {
-                        Point absPoint;
-                        point.abs(absPoint);
-                        if (low_level_point_set.find(absPoint) == low_level_point_set.end()) {
+                        Point symmetryRegularPoint;
+                        point.symmetryRegular(symmetryRegularPoint);
+                        if (low_level_point_set.find(symmetryRegularPoint) == low_level_point_set.end()) {
                             cur_fig_points_for_cur_level.insert(point);
                         }
                     }
@@ -136,9 +136,9 @@ bfs::bfs(const unsigned max_level)
                 continue;
             }
             for (const auto &p:cur_fig_points_for_cur_level) {
-                Point absPoint;
-                p.abs(absPoint);
-                cur_level_point_set.insert(absPoint);
+                Point symmetryRegularPoint;
+                p.symmetryRegular(symmetryRegularPoint);
+                cur_level_point_set.insert(symmetryRegularPoint);
             }
             LineSet new_lines(first_level_line_set);
             {

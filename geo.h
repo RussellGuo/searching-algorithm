@@ -62,7 +62,7 @@ public:
     Point(const Point &) = default;
     Point& operator =(const Point &) = default;
 
-    void abs(Point &ret) const {
+    void symmetryRegular(Point &ret) const {
         ret.x = Rational(std::abs(x.numerator()), x.denominator());
         ret.y = Rational(std::abs(y.numerator()), y.denominator());
         if (ret.x < ret.y) {
