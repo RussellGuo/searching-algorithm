@@ -70,6 +70,34 @@ public:
         }
     }
 
+    void setEightSymmetry(Point symmetryArray[8]) const {
+        // origin
+        symmetryArray[0].x = +x;
+        symmetryArray[0].y = +y;
+        // mirror x-axis, x' = x, y' = -y
+        symmetryArray[1].x = +x;
+        symmetryArray[1].y = -y;
+        // mirror y-axis x' = -x, y' = y
+        symmetryArray[2].x = -x;
+        symmetryArray[2].y = +y;
+        // centrosymmetric to (0,0), x' = -x, y' = -y
+        symmetryArray[3].x = -x;
+        symmetryArray[3].y = -y;
+        // swap x,y and do above again
+        // origin x'= y, y' = x
+        symmetryArray[4].x = +y;
+        symmetryArray[4].y = +x;
+        // mirror x-axis x' = y, y' = -x
+        symmetryArray[5].x = +y;
+        symmetryArray[5].y = -x;
+        // mirror y-axis, x' = -y, y' = x
+        symmetryArray[6].x = -y;
+        symmetryArray[6].y = +x;
+        // centrosymmetric to (0,0), x' = -y, y' = -x
+        symmetryArray[7].x = -y;
+        symmetryArray[7].y = -x;
+    }
+
     // an auxilliary class for unordered set/map
     struct hash {
         size_t operator()(const Point& p) const
@@ -120,6 +148,7 @@ typedef std::set<Point> PointSet;
 
 class Line {
 public:
+    Line(): a(0), b(0), c(0) {} // an invalid line
     // ax + by = c, define a line by a, b and c
     Line(const Rational &_a, const Rational &_b, const Rational &_c) {
         construct(_a, _b, _c);
@@ -131,6 +160,46 @@ public:
         auto _b = p2.getX() - p1.getX();
         auto _c = p2.getX() * p1.getY() - p1.getX() * p2.getY();
         construct(_a, _b, _c);
+    }
+
+    void setEightSymmetry(Line symmetryArray[8]) const {
+        // origin
+        symmetryArray[0].a = +a;
+        symmetryArray[0].b = +b;
+        symmetryArray[0].c = +c;
+        // mirror x-axis, x' = x, y' = -y
+        symmetryArray[1].a = +a;
+        symmetryArray[1].b = -b;
+        symmetryArray[1].c = +c;
+        // mirror y-axis x' = -x, y' = y
+        symmetryArray[2].a = -a;
+        symmetryArray[2].b = +b;
+        symmetryArray[2].c = +c;
+        // centrosymmetric to (0,0), x' = -x, y' = -y
+        symmetryArray[3].a = -a;
+        symmetryArray[3].b = -b;
+        symmetryArray[3].c = +c;
+        // swap x,y and do above again
+        // origin x'= y, y' = x
+        symmetryArray[4].a = +b;
+        symmetryArray[4].b = +a;
+        symmetryArray[4].c = +c;
+        // mirror x-axis x' = y, y' = -x
+        symmetryArray[5].a = +b;
+        symmetryArray[5].b = -a;
+        symmetryArray[5].c = +c;
+        // mirror y-axis, x' = -y, y' = x
+        symmetryArray[6].a = -b;
+        symmetryArray[6].b = +a;
+        symmetryArray[6].c = +c;
+        // centrosymmetric to (0,0), x' = -y, y' = -x
+        symmetryArray[7].a = -b;
+        symmetryArray[7].b = -a;
+        symmetryArray[7].c = +c;
+
+        for (unsigned short i = 1; i < 8; i++) {
+            symmetryArray[i].sign_adjust();
+        }
     }
 
     bool isValid() const {
@@ -212,6 +281,10 @@ private:
         a /= _gcd;
         b /= _gcd;
         c /= _gcd;
+
+        sign_adjust();
+    }
+    void sign_adjust() {
         if (a < 0 || (a == 0 && b < 0)) {
             a = -a;
             b = -b;

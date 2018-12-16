@@ -28,6 +28,24 @@ inline static void output_point_figure(const Figure::FigurePtr &fig_ptr, const P
     printf("0 0 0 0\n");
 }
 
+inline static void output_point_figure_symmetry(const Figure::FigurePtr &fig_ptr, const PointSet& points)
+{
+    Figure fig_symmetry_array[8];
+    PointSet points_symmetry_array[8];
+    fig_ptr->setEightSymmetry(fig_symmetry_array);
+    for (const auto &point: points) {
+        Point point_sysmmetry_array[8];
+        point.setEightSymmetry(point_sysmmetry_array);
+        for (uint16_t i = 0; i < 8; i++) {
+            points_symmetry_array[i].insert(point_sysmmetry_array[i]);
+        }
+    }
+
+    for (uint16_t i = 0; i < 8; i++) {
+        output_point_figure(fig_symmetry_array + i, points_symmetry_array[i]);
+    }
+}
+
 bfs::bfs(const unsigned max_level)
 {
     const auto begin_time = std::chrono::steady_clock::now();
@@ -67,7 +85,7 @@ bfs::bfs(const unsigned max_level)
     Figure *init_fig = new Figure();
     FigSet cur_level_fig_tab;
     cur_level_fig_tab.insert(init_fig);
-    output_point_figure(init_fig, init_points);
+    output_point_figure_symmetry(init_fig, init_points);
 
     PointSet low_level_point_set(init_points);
 
@@ -112,7 +130,7 @@ bfs::bfs(const unsigned max_level)
                     }
                 }
             }
-            output_point_figure(cur_fig, cur_fig_points_for_cur_level);
+            output_point_figure_symmetry(cur_fig, cur_fig_points_for_cur_level);
 
             if (level == max_level) {
                 continue;
@@ -143,7 +161,17 @@ bfs::bfs(const unsigned max_level)
                     continue;
                 }
                 Figure fig(*cur_fig, line);
-                if (next_level_fig_tab.find(&fig) == next_level_fig_tab.cend()) {
+                Figure fig_symmetry_array[8];
+                fig.setEightSymmetry(fig_symmetry_array);
+                bool already_has_in_set = false;
+                for (const auto &f:fig_symmetry_array) {
+                    if (next_level_fig_tab.find(&f) != next_level_fig_tab.cend()) {
+                        already_has_in_set = true;
+                        break;
+                    }
+                }
+
+                if (!already_has_in_set) {
                     Figure *ptr = new Figure(fig);
                     next_level_fig_tab.insert(ptr);
                 }

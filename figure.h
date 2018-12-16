@@ -23,6 +23,23 @@ public:
         return ret;
     }
 
+    void setEightSymmetry(Figure symmetryArray[8]) const {
+        uint16_t line_count = uint16_t(lineCount());
+        for (uint16_t i = 0; i < 8; i++) {
+            symmetryArray[i].lines.resize(line_count);
+        }
+        Line LineArray[8];
+        for (uint16_t ll = 0; ll < line_count; ll++) {
+            lines[ll].setEightSymmetry(LineArray);
+            for (uint16_t i = 0; i < 8; i++) {
+                symmetryArray[i].lines[ll] =LineArray[i];
+            }
+        }
+        for (uint16_t i = 0; i < 8; i++) {
+            std::sort(symmetryArray[i].lines.begin(), symmetryArray[i].lines.end());
+        }
+    }
+
     Figure(const Figure &fig):lines(fig.lines) {}
     Figure& operator =(const Figure &) = delete;
 
