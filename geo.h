@@ -51,6 +51,7 @@ inline Int det2(Int a, Int b, Int c, Int d)
 class Point {
 public:
     explicit Point():x(INVALID_COORD), y(INVALID_COORD) {}
+    // define a point by x and y
     Point(const Rational &_x, const Rational &_y):
         x(_x), y(_y)
     {
@@ -61,7 +62,15 @@ public:
     Point(const Point &) = default;
     Point& operator =(const Point &) = default;
 
-    // a auxilliary class for unordered set/map
+    void abs(Point &ret) const {
+        ret.x = Rational(std::abs(x.numerator()), x.denominator());
+        ret.y = Rational(std::abs(y.numerator()), y.denominator());
+        if (ret.x < ret.y) {
+            std::swap(ret.x, ret.y);
+        }
+    }
+
+    // an auxilliary class for unordered set/map
     struct hash {
         size_t operator()(const Point& p) const
         {
@@ -86,7 +95,7 @@ public:
     }
 
     static bool isValid(const Rational &v) {
-        return abs(v.numerator()) <= MAX_GRID_COORD * v.denominator();
+        return std::abs(v.numerator()) <= MAX_GRID_COORD * v.denominator();
     }
     static bool isValid(const Rational &x, const Rational &y) {
         return isValid(x) && isValid(y);
@@ -102,7 +111,6 @@ public:
     }
 
 private:
-    // define a point by x and y
     Rational x, y;
 
 };
@@ -136,7 +144,7 @@ public:
         _c = c;
     }
 
-    // a auxilliary class for unordered set/map
+    // an auxilliary class for unordered set/map
     struct hash {
         size_t operator()(const Line& ll) const
         {

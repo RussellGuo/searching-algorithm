@@ -3,8 +3,7 @@
 #include <forward_list>
 #include <unordered_map>
 
-#include <boost/range/join.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
+#include <chrono>
 
 #include "bfs.h"
 #include "figure.h"
@@ -18,20 +17,20 @@ inline static void output_point_figure(const Figure::FigurePtr &fig_ptr, const P
     for (const auto &line: fig_ptr->getLines()) {
         Int a, b, c;
         line.getParams(a, b, c);
-        fprintf(stderr, "%d %d %d ", a, b, c);
+        printf("%d %d %d ", a, b, c);
     }
-    fprintf(stderr, "0 0 0 ");
+    printf("0 0 0 ");
 
     for (const auto &point: points) {
         auto x(point.getX()), y(point.getY());
-        fprintf(stderr, "%d %d %d %d ", x.numerator(), x.denominator(), y.numerator(), y.denominator());
+        printf("%d %d %d %d ", x.numerator(), x.denominator(), y.numerator(), y.denominator());
     }
-    fprintf(stderr, "0 0 0 0\n");
+    printf("0 0 0 0\n");
 }
 
 bfs::bfs(const unsigned max_level)
 {
-    const auto begin_time = boost::posix_time::microsec_clock::local_time();
+    const auto begin_time = std::chrono::steady_clock::now();
 
     LineSet init_lines;
     for (auto i = -geo::MAX_GRID_COORD; i <= geo::MAX_GRID_COORD; i++) {
@@ -77,12 +76,12 @@ bfs::bfs(const unsigned max_level)
     for (size_t level = 0; level <= max_level; level++) {
         PointSet cur_level_point_set;
         FigSet next_level_fig_tab;
-        printf("level: %zd, total figures %zd\n", level, cur_level_fig_tab.size());
+        fprintf(stderr, "level: %zd, total figures %zd, low level points %zd\n", level, cur_level_fig_tab.size(), low_level_point_set.size());
         for(const auto cur_fig:cur_level_fig_tab) {
             if (count % 10000 == 0) {
-                const auto microsec = boost::posix_time::microsec_clock::local_time() - begin_time;
-                printf("log:%10zd, %10ld\n", count, microsec.total_microseconds());
-                fflush(stdout);
+                const auto nanosec = std::chrono::steady_clock::now() - begin_time;
+                fprintf(stderr, "log:%10zd, %10lds\n", count, nanosec.count() / 1000000000);
+                fflush(stderr);
             }
             count++;
             // find all the point and record them
@@ -104,8 +103,12 @@ bfs::bfs(const unsigned max_level)
                         continue;
                     }
                     auto inserted = cur_fig_points_other_than_init_fig.insert(point).second;
-                    if (inserted && low_level_point_set.find(point) == low_level_point_set.end()) {
-                        cur_fig_points_for_cur_level.insert(point);
+                    if (inserted) {
+                        Point absPoint;
+                        point.abs(absPoint);
+                        if (low_level_point_set.find(absPoint) == low_level_point_set.end()) {
+                            cur_fig_points_for_cur_level.insert(point);
+                        }
                     }
                 }
             }
@@ -115,7 +118,9 @@ bfs::bfs(const unsigned max_level)
                 continue;
             }
             for (const auto &p:cur_fig_points_for_cur_level) {
-                cur_level_point_set.insert(p);
+                Point absPoint;
+                p.abs(absPoint);
+                cur_level_point_set.insert(absPoint);
             }
             LineSet new_lines(first_level_line_set);
             {
