@@ -2,17 +2,23 @@ import itertools
 import time
 from fractions import Fraction
 from typing import Callable
+import sys
 
 import common
 from geo import Line
 
 
 def figure_symmetry_all(lines):
+    def normalize_line(a,b,c):
+        if a < 0 or (a == 0 and b < 0):
+            a, b, c = -a, -b, -c
+        return a, b, c
+
     def figure_symmetry_hv(_lines):
-        figs = {tuple(sorted([(line[0], +line[1], +line[2]) for line in _lines])),
-                tuple(sorted([(line[0], -line[1], +line[2]) for line in _lines])),
-                tuple(sorted([(line[0], +line[1], -line[2]) for line in _lines])),
-                tuple(sorted([(line[0], -line[1], -line[2]) for line in _lines]))}
+        figs = {tuple(sorted([normalize_line(line[0], +line[1], +line[2]) for line in _lines])),
+                tuple(sorted([normalize_line(line[0], -line[1], +line[2]) for line in _lines])),
+                tuple(sorted([normalize_line(line[0], +line[1], -line[2]) for line in _lines])),
+                tuple(sorted([normalize_line(line[0], -line[1], -line[2]) for line in _lines]))}
         return figs
 
     def figure_swap_xy(_lines):
@@ -82,7 +88,7 @@ def bfs_dump_for_pythagorea(init_param_lines, coord_grid=3, max_depth=3):
         nonlocal test_loop_count
         test_loop_count += 1
         if test_loop_count % 10000 == 0:
-            print(test_loop_count, time.time())
+            print(test_loop_count, time.time(), file=sys.stderr)
         point_vector = (point.x.numerator, point.x.denominator, point.y.numerator, point.y.denominator)
         try:
             fig_list = point_tab[point_vector]
@@ -125,9 +131,16 @@ def bfs_dump_for_pythagorea(init_param_lines, coord_grid=3, max_depth=3):
         get_ref_of_line((line.a, line.b, line.c))
 
     for level in range(max_depth + 1):
-        print(level, time.time())
+        print(level, time.time(), file=sys.stderr)
         current_figure_set = [fig for fig in fig_tab if get_fig_level(fig) == level]
-        print(level, len(current_figure_set), time.time())
+        current_figure_set.sort()
+        print(level, len(current_figure_set), time.time(), file=sys.stderr)
+        for fff in current_figure_set:
+            for lll in fff:
+                print(lll[0], lll[1], lll[2], end=' ', file=sys.stdout)
+            print("", file=sys.stdout)
+        if level == max_depth:
+            return {}
         for cur_fig in current_figure_set:
             # find all the point and record them
             # should use all lines cross (all lines + init_lines)
@@ -161,10 +174,10 @@ def bfs_dump_for_pythagorea(init_param_lines, coord_grid=3, max_depth=3):
                         if fig in fig_tab:
                             break
                     else:
-                        fig_tab.add(new_fig)
+                        fig_tab.add(min(new_figs))
 
-    print(len(point_tab), len(fig_tab), len(line_tab), time.time())
-    print(point_tab.__sizeof__(), fig_tab.__sizeof__(), line_tab.__sizeof__(), time.time())
+    print(len(point_tab), len(fig_tab), len(line_tab), time.time(), file=sys.stderr)
+    print(point_tab.__sizeof__(), fig_tab.__sizeof__(), line_tab.__sizeof__(), time.time(), file=sys.stderr)
 
     return point_tab
 
