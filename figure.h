@@ -46,6 +46,20 @@ public:
     typedef const Figure *FigurePtr;
 
     bool operator ==(const Figure &other) const { return lines == other.lines;}
+    bool operator <(const Figure &other) const {
+        if (lineCount() == other.lineCount()) {
+            for (uint16_t i = 0; i < lineCount(); i++) {
+                if (lines[i] != other.lines[i]) {
+                    return lines[i] < other.lines[i];
+                }
+            }
+            return false;
+        } else {
+            return lineCount() < other.lineCount();
+        }
+
+
+    }
 
     struct hash {
         size_t operator() (const Figure &fig) const {

@@ -30,6 +30,16 @@ inline static void output_point_figure(const Figure::FigurePtr &fig_ptr, const P
 
 inline static void output_point_figure_symmetry(const Figure::FigurePtr &fig_ptr, const PointSet& points)
 {
+    for (const auto &line: fig_ptr->getLines()) {
+        Int a, b, c;
+        line.getParams(a, b, c);
+        printf("%d %d %d ", a, b, c);
+    }
+    printf("\n");
+    return;
+    if (points.size() == 0) {
+        // return;
+    }
     Figure fig_symmetry_array[8];
     PointSet points_symmetry_array[8];
     fig_ptr->setEightSymmetry(fig_symmetry_array);
@@ -172,7 +182,8 @@ bfs::bfs(const unsigned max_level)
                 }
 
                 if (!already_has_in_set) {
-                    Figure *ptr = new Figure(fig);
+                    auto min_fig = std::min_element(std::begin(fig_symmetry_array), std::end(fig_symmetry_array));
+                    Figure *ptr = new Figure(*min_fig);
                     next_level_fig_tab.insert(ptr);
                 }
             }
