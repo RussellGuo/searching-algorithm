@@ -14,6 +14,7 @@ int main()
     geo::testFigure();
 
     bfs bfs;
+    bfs.searching(3);
 
     return 0;
 }

@@ -1,7 +1,3 @@
-#include <set>
-#include <map>
-#include <forward_list>
-#include <unordered_map>
 
 #include <chrono>
 
@@ -9,12 +5,12 @@
 #include "figure.h"
 using namespace geo;
 
-inline static void output_point_figure(const Figure::FigurePtr &fig_ptr, const PointSet& points)
+inline void bfs::output_point_figure(const Figure &fig, const PointSet& points)
 {
     if (points.size() <= 0) {
         return;
     }
-    for (const auto &line: fig_ptr->getLines()) {
+    for (const auto &line: fig.getLines()) {
         Int a, b, c;
         line.getParams(a, b, c);
         printf("%d %d %d ", a, b, c);
@@ -28,21 +24,19 @@ inline static void output_point_figure(const Figure::FigurePtr &fig_ptr, const P
     printf("0 0 0 0\n");
 }
 
-inline static void output_point_figure_symmetry(const Figure::FigurePtr &fig_ptr, const PointSet& points)
+inline void bfs::output_point_figure_symmetry(const Figure &fig, const PointSet& points)
 {
-    for (const auto &line: fig_ptr->getLines()) {
-        Int a, b, c;
-        line.getParams(a, b, c);
-        printf("%d %d %d ", a, b, c);
-    }
-    printf("\n");
-    return;
     if (points.size() == 0) {
-        // return;
+        return;
     }
+    for (const auto &point: points) {
+        output.push_front(std::make_pair(fig, point));
+    }
+    return;
+
     Figure fig_symmetry_array[8];
     PointSet points_symmetry_array[8];
-    fig_ptr->setEightSymmetry(fig_symmetry_array);
+    fig.setEightSymmetry(fig_symmetry_array);
     for (const auto &point: points) {
         Point point_sysmmetry_array[8];
         point.setEightSymmetry(point_sysmmetry_array);
@@ -52,21 +46,18 @@ inline static void output_point_figure_symmetry(const Figure::FigurePtr &fig_ptr
     }
 
     for (uint16_t i = 0; i < 8; i++) {
-        output_point_figure(fig_symmetry_array + i, points_symmetry_array[i]);
+        output_point_figure(fig_symmetry_array[i], points_symmetry_array[i]);
     }
 }
 
-bfs::bfs(const unsigned max_level)
+bfs::bfs()
 {
-    const auto begin_time = std::chrono::steady_clock::now();
 
-    LineSet init_lines;
     for (auto i = -geo::MAX_GRID_COORD; i <= geo::MAX_GRID_COORD; i++) {
         init_lines.emplace(1, 0, i);
         init_lines.emplace(0, 1, i);
     }
 
-    PointSet init_points;
     for(const auto &line1:init_lines) {
         for (const auto &line2:init_lines) {
             if (line1 < line2) {
@@ -78,7 +69,6 @@ bfs::bfs(const unsigned max_level)
         }
     }
 
-    LineSet first_level_line_set;
     for (const auto &point1:init_points){
         for (const auto &point2:init_points) {
             if (point1 < point2) {
@@ -91,8 +81,14 @@ bfs::bfs(const unsigned max_level)
             }
         }
     }
+}
 
-    Figure *init_fig = new Figure();
+void bfs::searching(const unsigned max_level)
+{
+    const auto begin_time = std::chrono::steady_clock::now();
+
+    output.clear();
+    Figure init_fig;
     FigSet cur_level_fig_tab;
     cur_level_fig_tab.insert(init_fig);
     output_point_figure_symmetry(init_fig, init_points);
@@ -105,7 +101,7 @@ bfs::bfs(const unsigned max_level)
         PointSet cur_level_point_set;
         FigSet next_level_fig_tab;
         fprintf(stderr, "level: %zd, total figures %zd, low level points %zd\n", level, cur_level_fig_tab.size(), low_level_point_set.size());
-        for(const auto cur_fig:cur_level_fig_tab) {
+        for(const auto &cur_fig:cur_level_fig_tab) {
             if (count % 10000 == 0) {
                 const auto nanosec = std::chrono::steady_clock::now() - begin_time;
                 fprintf(stderr, "log:%10zd, %10lds\n", count, nanosec.count() / 1000000000);
@@ -117,7 +113,7 @@ bfs::bfs(const unsigned max_level)
             PointSet cur_fig_points_other_than_init_fig;
             PointSet cur_fig_points_for_cur_level;
 
-            const auto &line_vector(cur_fig->getLines());
+            const auto &line_vector(cur_fig.getLines());
             LineSet geo_lines(line_vector.cbegin(), line_vector.cend());
             LineSet all_lines(init_lines);
             for (const auto &line:line_vector) {
@@ -170,12 +166,12 @@ bfs::bfs(const unsigned max_level)
                 if (all_lines.find(line) != all_lines.cend()) {
                     continue;
                 }
-                Figure fig(*cur_fig, line);
+                Figure fig(cur_fig, line);
                 Figure fig_symmetry_array[8];
                 fig.setEightSymmetry(fig_symmetry_array);
                 bool already_has_in_set = false;
                 for (const auto &f:fig_symmetry_array) {
-                    if (next_level_fig_tab.find(&f) != next_level_fig_tab.cend()) {
+                    if (next_level_fig_tab.find(f) != next_level_fig_tab.cend()) {
                         already_has_in_set = true;
                         break;
                     }
@@ -183,12 +179,12 @@ bfs::bfs(const unsigned max_level)
 
                 if (!already_has_in_set) {
                     auto min_fig = std::min_element(std::begin(fig_symmetry_array), std::end(fig_symmetry_array));
-                    Figure *ptr = new Figure(*min_fig);
+                    Figure ptr(*min_fig);
                     next_level_fig_tab.insert(ptr);
                 }
             }
 
-            cur_fig->getLines();
+            cur_fig.getLines();
         }
         {
             swap(low_level_point_set, cur_level_point_set);

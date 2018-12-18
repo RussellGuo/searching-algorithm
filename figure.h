@@ -43,8 +43,6 @@ public:
     Figure(const Figure &fig):lines(fig.lines) {}
     Figure& operator =(const Figure &) = delete;
 
-    typedef const Figure *FigurePtr;
-
     bool operator ==(const Figure &other) const { return lines == other.lines;}
     bool operator <(const Figure &other) const {
         if (lineCount() == other.lineCount()) {
@@ -74,37 +72,12 @@ public:
             return ret;
         }
     };
-    struct pointHash {
-        size_t operator() (const FigurePtr &fig) const {
-            size_t ret = hash()(*fig);
-            return ret;
-        }
-    };
-    struct pointEqual {
-        bool operator() (const FigurePtr &fig_left, const FigurePtr &fig_right) const {
-            bool ret = *fig_left == *fig_right;
-            return ret;
-        }
-    };
-    struct pointLess {
-        bool operator() (const FigurePtr &fig_left, const FigurePtr &fig_right) const {
-            if (fig_left->lineCount() != fig_right->lineCount()) {
-                return fig_left->lineCount() < fig_right->lineCount();
-            }
-            for (unsigned i = 0; i < fig_left->lineCount(); i++) {
-                if (fig_left->getLines()[i] != fig_right->getLines()[i]) {
-                    return fig_left->getLines()[i] < fig_right->getLines()[i];
-                }
-            }
-            return false;
-        }
-    };
 
 private:
     std::vector<Line> lines;
 };
 
-typedef std::set<Figure::FigurePtr, Figure::pointLess> FigSet;
+typedef std::set<Figure> FigSet;
 
 void testFigure();
 

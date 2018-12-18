@@ -12,9 +12,9 @@ void geo::testFigure()
     Figure fig2(fig1, line2);
     Figure fig3(nullFig, line2);
     Figure fig4(fig3, line1);
-    auto ret1 = set.insert(&nullFig);
-    auto ret2 = set.insert(&nullFig);
-    auto ret3 = set.insert(&fig1);
+    auto ret1 = set.insert(nullFig);
+    auto ret2 = set.insert(nullFig);
+    auto ret3 = set.insert(fig1);
     auto cmp = fig2 == fig4;
 
     auto it = set.cbegin();
