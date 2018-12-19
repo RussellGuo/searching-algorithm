@@ -116,13 +116,11 @@ void bfs::searching(const unsigned max_level)
             const auto &line_vector(cur_fig.getLines());
             LineSet geo_lines(line_vector.cbegin(), line_vector.cend());
             LineSet all_lines(init_lines);
-            for (const auto &line:line_vector) {
-                all_lines.insert(line);
-            }
+            std::copy(line_vector.begin(), line_vector.end(), std::inserter(all_lines, all_lines.begin()));
 
-            Point point;
             for(const auto &line_a:geo_lines) {
                 for (const auto &line_b:all_lines) {
+                    Point point;
                     if (!Line::getIntersectionPoint(line_a, line_b, point)) {
                         continue;
                     }
@@ -155,10 +153,9 @@ void bfs::searching(const unsigned max_level)
                 for (const auto& point_1:cur_fig_points_other_than_init_fig) {
                     for(const auto& point_2: all_points) {
                         Line line(point_1, point_2);
-                        if (!line.isValid()) {
-                            continue;
+                        if (line.isValid()) {
+                            new_lines.insert(line);
                         }
-                        new_lines.insert(line);
                     }
                 }
             }
@@ -169,18 +166,13 @@ void bfs::searching(const unsigned max_level)
                 Figure fig(cur_fig, line);
                 Figure fig_symmetry_array[8];
                 fig.setEightSymmetry(fig_symmetry_array);
-                bool already_has_in_set = false;
-                for (const auto &f:fig_symmetry_array) {
-                    if (next_level_fig_tab.find(f) != next_level_fig_tab.cend()) {
-                        already_has_in_set = true;
-                        break;
-                    }
-                }
-
+                bool already_has_in_set =std::any_of(
+                            std::begin(fig_symmetry_array), std::end(fig_symmetry_array),
+                            [&next_level_fig_tab](const Figure&f){ return next_level_fig_tab.find(f) != next_level_fig_tab.cend();}
+                );
                 if (!already_has_in_set) {
                     auto min_fig = std::min_element(std::begin(fig_symmetry_array), std::end(fig_symmetry_array));
-                    Figure ptr(*min_fig);
-                    next_level_fig_tab.insert(ptr);
+                    next_level_fig_tab.emplace(*min_fig);
                 }
             }
 
@@ -188,12 +180,12 @@ void bfs::searching(const unsigned max_level)
         }
         {
             swap(low_level_point_set, cur_level_point_set);
-            for (const auto &p:cur_level_point_set) {
-                low_level_point_set.insert(p);
-            }
+            std::copy(cur_level_point_set.cbegin(), cur_level_point_set.cend(), std::inserter(low_level_point_set, low_level_point_set.begin()));
         }
-        cur_level_fig_tab.clear();
-        swap(cur_level_fig_tab, next_level_fig_tab);
+        {
+            cur_level_fig_tab.clear();
+            swap(cur_level_fig_tab, next_level_fig_tab);
+        }
 
     }
 }

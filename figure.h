@@ -9,10 +9,13 @@ class Figure: private std::vector<Line>
 {
 public:
     Figure() {}
-    Figure(const Figure &parent, const Line &ll):vector(parent) {
+    Figure(const Figure &parent, const Line &ll) {
+
+        auto insert_pos = std::upper_bound(parent.cbegin(), parent.end(), ll);
+        auto inserter = std::back_inserter<std::vector<Line>>((*this));
+        std::copy(parent.cbegin(), insert_pos, inserter);
         push_back(ll);
-        std::sort(begin(), end());
-        shrink_to_fit();
+        std::copy(insert_pos, parent.cend(), inserter);
     }
 
     const std::vector<Line> &getLines() const {
