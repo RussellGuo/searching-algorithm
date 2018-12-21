@@ -118,20 +118,30 @@ void bfs::searching(const unsigned max_level)
             LineSet all_lines(init_lines);
             std::copy(line_vector.begin(), line_vector.end(), std::inserter(all_lines, all_lines.begin()));
 
+            auto get_new_point_by_two_lines = [&cur_fig_points_other_than_init_fig, &cur_fig_points_for_cur_level, &low_level_point_set] (const Line &line_a, const Line &line_b) {
+                Point point;
+                if (!Line::getIntersectionPoint(line_a, line_b, point)) {
+                    return;
+                }
+                auto inserted = cur_fig_points_other_than_init_fig.insert(point).second;
+                if (inserted) {
+                    Point symmetryRegularPoint;
+                    point.symmetryRegular(symmetryRegularPoint);
+                    if (low_level_point_set.find(symmetryRegularPoint) == low_level_point_set.end()) {
+                        cur_fig_points_for_cur_level.insert(point);
+                    }
+                }
+            };
             for(const auto &line_a:geo_lines) {
-                for (const auto &line_b:all_lines) {
-                    Point point;
-                    if (!Line::getIntersectionPoint(line_a, line_b, point)) {
-                        continue;
-                    }
-                    auto inserted = cur_fig_points_other_than_init_fig.insert(point).second;
-                    if (inserted) {
-                        Point symmetryRegularPoint;
-                        point.symmetryRegular(symmetryRegularPoint);
-                        if (low_level_point_set.find(symmetryRegularPoint) == low_level_point_set.end()) {
-                            cur_fig_points_for_cur_level.insert(point);
-                        }
-                    }
+                for (const auto &line_b:init_lines) {
+                    get_new_point_by_two_lines(line_a, line_b);
+                }
+            }
+            for (uint16_t i = 0; i < cur_fig.lineCount(); i++) {
+                const auto line_a = line_vector[i];
+                for (uint16_t j = i + 1; j <cur_fig.lineCount(); j++) {
+                    const auto line_b = line_vector[j];
+                    get_new_point_by_two_lines(line_a, line_b);
                 }
             }
             output_point_figure_symmetry(cur_fig, cur_fig_points_for_cur_level);
@@ -146,16 +156,20 @@ void bfs::searching(const unsigned max_level)
             }
             LineSet new_lines(first_level_line_set);
             {
-                PointSet all_points(init_points);
-                for (const auto &point:cur_fig_points_other_than_init_fig) {
-                    all_points.insert(point);
-                }
+                auto get_new_line_by_two_points = [&new_lines] (const Point &point_1, const Point &point_2) {
+                    Line line(point_1, point_2);
+                    if (line.isValid()) {
+                        new_lines.insert(line);
+                    }
+                };
                 for (const auto& point_1:cur_fig_points_other_than_init_fig) {
-                    for(const auto& point_2: all_points) {
-                        Line line(point_1, point_2);
-                        if (line.isValid()) {
-                            new_lines.insert(line);
-                        }
+                    for(const auto& point_2: init_points) {
+                        get_new_line_by_two_points(point_1, point_2);
+                    }
+                }
+                for (auto point_1_ptr = cur_fig_points_other_than_init_fig.cbegin(); point_1_ptr != cur_fig_points_other_than_init_fig.cend(); ++point_1_ptr) {
+                    for(auto point_2_ptr = point_1_ptr; ++point_2_ptr != cur_fig_points_other_than_init_fig.cend();) {
+                        get_new_line_by_two_points(*point_1_ptr, *point_2_ptr);
                     }
                 }
             }
