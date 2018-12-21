@@ -102,7 +102,7 @@ public:
     struct hash {
         size_t operator()(const Point& p) const
         {
-            return size_t(p.x.numerator()) | size_t((p.x.denominator()) << 8) | size_t((p.y.numerator()) << 16) | size_t((p.y.denominator()) << 24);
+            return size_t(p.x.numerator()) ^ size_t((p.x.denominator()) << 8) ^ size_t((p.y.numerator()) << 16) ^ size_t((p.y.denominator()) << 24);
         }
     };
 
@@ -143,7 +143,7 @@ private:
 
 };
 
-typedef std::set<Point> PointSet;
+typedef std::unordered_set<Point, Point::hash> PointSet;
 
 
 class Line {

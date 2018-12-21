@@ -156,9 +156,9 @@ void bfs::searching(const unsigned max_level)
             }
             LineSet new_lines(first_level_line_set);
             {
-                auto get_new_line_by_two_points = [&new_lines] (const Point &point_1, const Point &point_2) {
+                auto get_new_line_by_two_points = [&new_lines, &all_lines] (const Point &point_1, const Point &point_2) {
                     Line line(point_1, point_2);
-                    if (line.isValid()) {
+                    if (line.isValid() && all_lines.find(line) == all_lines.cend()) {
                         new_lines.insert(line);
                     }
                 };
@@ -174,9 +174,6 @@ void bfs::searching(const unsigned max_level)
                 }
             }
             for(const auto &line: new_lines) {
-                if (all_lines.find(line) != all_lines.cend()) {
-                    continue;
-                }
                 Figure fig(cur_fig, line);
                 Figure fig_symmetry_array[8];
                 fig.setEightSymmetry(fig_symmetry_array);
