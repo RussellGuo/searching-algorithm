@@ -118,9 +118,8 @@ void bfs::searching(const unsigned max_level)
             LineSet all_lines(init_lines);
             std::copy(line_vector.begin(), line_vector.end(), std::inserter(all_lines, all_lines.begin()));
 
-            auto get_new_point_by_two_lines = [&cur_fig_points_other_than_init_fig, &cur_fig_points_for_cur_level, &low_level_point_set] (const Line &line_a, const Line &line_b) {
-                Point point;
-                if (!Line::getIntersectionPoint(line_a, line_b, point)) {
+            auto new_points_for_cur_fig = [&cur_fig_points_other_than_init_fig, &cur_fig_points_for_cur_level, &low_level_point_set] (const Point &point) {
+                if (!point.isValid()) {
                     return;
                 }
                 auto inserted = cur_fig_points_other_than_init_fig.insert(point).second;
@@ -133,15 +132,33 @@ void bfs::searching(const unsigned max_level)
                 }
             };
             for(const auto &line_a:geo_lines) {
-                for (const auto &line_b:init_lines) {
-                    get_new_point_by_two_lines(line_a, line_b);
+                Int a, b, c;
+                line_a.getParams(a, b, c);
+                if (a != 0) {
+                    for (auto k = -MAX_GRID_COORD; k <= +MAX_GRID_COORD; k++) {
+                        Rational x(c - b * k, a);
+                        Point p(x, k);
+                        new_points_for_cur_fig(p);
+                    }
+
+                }
+                if (b != 0) {
+                    for (auto k = -MAX_GRID_COORD; k <= +MAX_GRID_COORD; k++) {
+                        Rational y(c - a * k, b);
+                        Point p(k, y);
+                        new_points_for_cur_fig(p);
+                    }
+
                 }
             }
             for (uint16_t i = 0; i < cur_fig.lineCount(); i++) {
-                const auto line_a = line_vector[i];
+                const auto &line_a = line_vector[i];
                 for (uint16_t j = i + 1; j <cur_fig.lineCount(); j++) {
-                    const auto line_b = line_vector[j];
-                    get_new_point_by_two_lines(line_a, line_b);
+                    const auto &line_b = line_vector[j];
+                    Point point;
+                    if (Line::getIntersectionPoint(line_a, line_b, point)) {
+                        new_points_for_cur_fig(point);
+                    }
                 }
             }
             output_point_figure_symmetry(cur_fig, cur_fig_points_for_cur_level);
@@ -177,14 +194,8 @@ void bfs::searching(const unsigned max_level)
                 Figure fig(cur_fig, line);
                 Figure fig_symmetry_array[8];
                 fig.setEightSymmetry(fig_symmetry_array);
-                bool already_has_in_set =std::any_of(
-                            std::begin(fig_symmetry_array), std::end(fig_symmetry_array),
-                            [&next_level_fig_tab](const Figure&f){ return next_level_fig_tab.find(f) != next_level_fig_tab.cend();}
-                );
-                if (!already_has_in_set) {
-                    auto min_fig = std::min_element(std::begin(fig_symmetry_array), std::end(fig_symmetry_array));
-                    next_level_fig_tab.emplace(*min_fig);
-                }
+                auto min_fig = std::min_element(std::begin(fig_symmetry_array), std::end(fig_symmetry_array));
+                next_level_fig_tab.emplace(*min_fig);
             }
 
             cur_fig.getLines();
